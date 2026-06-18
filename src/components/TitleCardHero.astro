@@ -46,3 +46,8 @@ const { version, videoSrc, posterSrc = '/media/hero-poster.svg' } = Astro.props;
   .plate .z { font: 900 11px var(--font-body); letter-spacing: 1px; border-bottom: 4px solid var(--ogf-ink); padding: 5px 16px; }
   .plate .a { font: 900 22px var(--font-display); padding: 6px 16px; }
 </style>
+<script>
+  import { initAnimations } from '../scripts/animate';
+  // Astro bundles & runs this on the client. initAnimations self-guards on reduced motion.
+  void initAnimations;
+</script>
