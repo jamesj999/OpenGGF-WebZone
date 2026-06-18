@@ -12,7 +12,7 @@ object timing, audio, and trace replay behavior should match the original games 
 closely as the engine can prove.
 
 This file is the short entry point. Deeper contributor docs live in
-[`docs/guide/contributing/`](docs/guide/contributing/).
+[`docs/guide/contributing/`](https://github.com/jamesj999/OpenGGF/tree/develop/docs/guide/contributing/).
 
 ## What To Work On
 

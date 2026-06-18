@@ -18,6 +18,7 @@ describe('SectionDownload', () => {
     const html = await c.renderToString(Download, { props: { hasData: true,
       matches: [{ platform: plat, assetUrl: null }] } });
     expect(html).toContain('https://github.com/jamesj999/OpenGGF/releases');
+    expect(html).not.toContain('/releases/latest');
   });
   it('no data → single Download-from-GitHub CTA to /releases/latest', async () => {
     const c = await AstroContainer.create();
@@ -39,5 +40,11 @@ describe('SectionReleases', () => {
     const html = await c.renderToString(Releases, { props: { releases: [] } });
     expect(html).toContain('View all releases on GitHub');
     expect(html).toContain('https://github.com/jamesj999/OpenGGF/releases');
+  });
+  it('prerelease release shows (pre) label', async () => {
+    const c = await AstroContainer.create();
+    const html = await c.renderToString(Releases, { props: { releases: [
+      { tag: 'v0.6-rc1', name: 'v0.6-rc1', url: 'u', prerelease: true, publishedAt: '2026-06-01T00:00:00Z', body: '', assets: [] }] } });
+    expect(html).toContain('(pre)');
   });
 });

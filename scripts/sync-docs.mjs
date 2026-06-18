@@ -99,9 +99,11 @@ for (const f of ALLOW_FILES) {
 const GITHUB_BASE = 'https://github.com/jamesj999/OpenGGF/blob/develop/';
 const LINK_RE = /\]\(((?!https?:|mailto:|\/|#)[^)\s]+?)\.md(#[^)]*)?\)/g;
 
+const DIR_RE = /\]\(((?!https?:|mailto:|\/|#)[^)\s]+\/)\)/g;
+
 function rewriteLinks(txt, repoPath) {
   const srcDir = posix.dirname(repoPath);
-  return txt.replace(LINK_RE, (_, p, hash) => {
+  txt = txt.replace(LINK_RE, (_, p, hash) => {
     // Resolve relative to source file's repo directory
     const targetRepo = posix.normalize(posix.join(srcDir, p + '.md'));
     if (repoPathToSlug.has(targetRepo)) {
@@ -111,6 +113,11 @@ function rewriteLinks(txt, repoPath) {
     // Non-synced: GitHub blob fallback (strip .md so the URL stays clean)
     return `](${GITHUB_BASE}${targetRepo.replace(/\.md$/, '')}${hash || ''})`;
   });
+  txt = txt.replace(DIR_RE, (_, p) => {
+    const targetRepo = posix.normalize(posix.join(srcDir, p));
+    return `](https://github.com/jamesj999/OpenGGF/tree/develop/${targetRepo})`;
+  });
+  return txt;
 }
 
 // Prune stale output: regenerate the vendored docs from scratch each run so deleted,

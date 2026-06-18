@@ -65,4 +65,11 @@ describe('sync-docs', () => {
     expect(existsSync(join(OUT, 'guide/PLAN.md'))).toBe(false);
     expect(existsSync(join(OUT, 'guide/PLAN'))).toBe(false);
   });
+
+  it('rewrites relative directory links (trailing /) to a GitHub tree URL', () => {
+    execFileSync('node', ['scripts/sync-docs.mjs', '--engine-path', FIX, '--out-dir', OUT], { encoding: 'utf8' });
+    const txt = readFileSync(join(OUT, 'guide/playing/dir-link.md'), 'utf8');
+    expect(txt).toContain('https://github.com/jamesj999/OpenGGF/tree/develop/');
+    expect(txt).not.toContain('](sub/)');
+  });
 });

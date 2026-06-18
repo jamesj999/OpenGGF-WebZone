@@ -606,9 +606,9 @@ Skills:
 
 - [`trace-replay-bug-fixing`](https://github.com/jamesj999/OpenGGF/blob/develop/.claude/skills/trace-replay-bug-fixing/skill) — the
   canonical workflow for any `*TraceReplay` test failure.
-- [`s1-trace-replay`](../../../.claude/skills/s1-trace-replay/) — Sonic 1 trace recording
+- [`s1-trace-replay`](https://github.com/jamesj999/OpenGGF/tree/develop/.claude/skills/s1-trace-replay/) — Sonic 1 trace recording
   specifics.
-- [`s1-retro-trace`](../../../.claude/skills/s1-retro-trace/) — recording S1 traces using
+- [`s1-retro-trace`](https://github.com/jamesj999/OpenGGF/tree/develop/.claude/skills/s1-retro-trace/) — recording S1 traces using
   stable-retro instead of BizHawk.
 
 ## Next Steps

@@ -8,7 +8,7 @@ const { posts } = Astro.props;
   <div class="grid">
     {posts.slice(0, 4).map((p) => (
       <a class="card" href={`/news/${p.slug}`}>
-        <time>{p.data.date.toISOString().slice(0, 10)}</time>
+        <time datetime={p.data.date.toISOString()}>{p.data.date.toISOString().slice(0, 10)}</time>
         <h3>{p.data.title}</h3>
         <p>{p.data.summary}</p>
       </a>
