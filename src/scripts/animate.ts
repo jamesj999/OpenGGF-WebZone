@@ -11,14 +11,22 @@ export function initAnimations(): void {
   const heroVideo = document.querySelector<HTMLVideoElement>('.hero-video');
   if (heroVideo) { heroVideo.autoplay = true; heroVideo.play().catch(() => {}); }
 
+  // Sonic 2 title-card SLIDE-IN choreography (engine TitleCardElement order/directions),
+  // staggered then held — no exit. Each `.from` animates FROM an off-screen offset TO the
+  // element's CSS resting position, so reduced-motion (early return above) shows the final
+  // composition immediately. Directions mirror the disassembly:
+  //   blue ← top · yellow/zone/bar/ctas ← right · red/ZONE/act ← left.
   const hero = document.querySelector('[data-hero]');
   if (hero) {
-    const tl = gsap.timeline();
-    tl.from(hero.querySelectorAll('.band'), { xPercent: (i) => (i === 0 ? -120 : 120), duration: .5, ease: 'power3.out' })
-      .from(hero.querySelector('.plate'), { scale: 0, rotation: -20, duration: .35, ease: 'back.out(2)' }, '-=.15')
-      .from(hero.querySelector('.wordmark'), { scale: 1.6, opacity: 0, duration: .35, ease: 'back.out(1.7)' }, '-=.2')
-      .from(hero.querySelectorAll('.trace,.techline,.ctas'), { y: 20, opacity: 0, stagger: .08, duration: .3 }, '-=.1')
-      .from(hero.querySelector('.video'), { opacity: 0, duration: .6 }, '-=.4');
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    tl.from('[data-tc="blue"]',      { yPercent: -100, duration: .45 })
+      .from('[data-tc="red"]',       { xPercent: -210, duration: .5 }, 0.06)
+      .from('[data-tc="yellow"]',    { xPercent: 130, duration: .5 }, 0.06)
+      .from('[data-tc="bar"]',       { x: () => window.innerWidth * 0.6, opacity: 0, duration: .45 }, 0.16)
+      .from('[data-tc="ctas"]',      { x: () => window.innerWidth * 0.6, opacity: 0, duration: .45 }, 0.18)
+      .from('[data-tc="zone"]',      { x: () => window.innerWidth, opacity: 0, duration: .5, ease: 'power4.out' }, 0.24)
+      .from('[data-tc="zonelabel"]', { x: -window.innerWidth * 0.6, opacity: 0, duration: .45 }, 0.32)
+      .from('[data-tc="act"]',       { x: -window.innerWidth * 0.5, opacity: 0, duration: .45 }, 0.32);
   }
 
   gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => {

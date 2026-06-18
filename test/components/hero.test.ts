@@ -3,18 +3,20 @@ import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import Hero from '../../src/components/TitleCardHero.astro';
 
 describe('TitleCardHero', () => {
-  it('renders wordmark, subtitle, two bands and the version plate', async () => {
+  it('renders the title-card composition (zone name, ZONE label, tagline, swoosh, version)', async () => {
     const c = await AstroContainer.create();
     const html = await c.renderToString(Hero, { props: { version: { label: 'v0.5', isPre: false } } });
-    expect(html).toContain('OpenGGF');
-    expect(html).toContain('Open-Source Sonic Engine');
-    expect((html.match(/clip-path/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(html).toContain('OpenGGF');                       // zone name
+    expect(html).toContain('Open-Source Sonic Engine');      // yellow-bar tagline
+    expect(html).toContain('>ZONE<');                        // ZONE label
+    expect(html).toContain('data-tc="red"');                 // red left block (toothed swoosh)
+    expect(html).toContain('data-tc="act"');                 // version slot present
     expect(html).toContain('v0.5');
   });
-  it('hides the version plate when version is null', async () => {
+  it('hides the version slot when version is null', async () => {
     const c = await AstroContainer.create();
     const html = await c.renderToString(Hero, { props: { version: null } });
-    expect(html).not.toContain('class="plate"');
+    expect(html).not.toContain('data-tc="act"');
   });
   it('renders the video WITHOUT autoplay (poster shows until JS opts in)', async () => {
     const c = await AstroContainer.create();
