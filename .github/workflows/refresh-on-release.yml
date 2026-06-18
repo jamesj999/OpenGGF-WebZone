@@ -1,0 +1,33 @@
+name: Refresh releases cache
+on:
+  repository_dispatch:
+    types: [engine-release]
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 6 * * *'   # daily backstop in case a dispatch is missed
+permissions:
+  contents: write          # REQUIRED to push the cache commit (default token may be read-only)
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - name: Refresh cache from GitHub Releases
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run refresh-cache
+      - name: Commit & push if changed
+        run: |
+          if ! git diff --quiet src/data/releases.cache.json; then
+            git config user.name "openggf-bot"
+            git config user.email "bot@openggf.com"
+            git add src/data/releases.cache.json
+            git commit -m "chore: refresh releases cache"
+            git push
+          else
+            echo "No cache change."
+          fi
