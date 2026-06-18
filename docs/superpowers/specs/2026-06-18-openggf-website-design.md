@@ -30,13 +30,31 @@ Java). Parity/Trace work is a supporting detail, not the pitch.
 - Output is fully static. (R2 buckets were considered but Pages is simpler and gives CDN+SSL+CI
   for free; R2 remains an option only if raw S3-bucket semantics are ever needed.)
 
+### Release-triggered rebuild (first-class requirement)
+
+Downloads/Releases/hero-version are resolved from the GitHub Releases API **at build time**, but
+Pages only rebuilds on pushes to `openggf-webzone`. So a new `jamesj999/OpenGGF` release would not
+appear until the next webzone push. To keep the "latest" promise:
+
+- Create a **Cloudflare Pages Deploy Hook** for the webzone project (a unique POST URL that
+  triggers a production rebuild).
+- Add a **GitHub Action in `jamesj999/OpenGGF`** triggered `on: release: [published]` that `POST`s
+  to the deploy hook (URL stored as a repo secret). New releases trigger a webzone rebuild within
+  minutes; the site stays static and CDN-cached.
+- This is a deploy-time wiring step (the hook URL + the workflow live in the engine repo), tracked
+  as an open item, but it is a **required** part of the design, not optional polish.
+
 ## 3. Stack & Key Libraries
 
 - **Astro** — static-site generator. Zero JS shipped by default; full creative control over the
   homepage; content collections power the docs. No Starlight (we want full custom Trace styling).
 - **GSAP + ScrollTrigger** — title-card "drop" animation and scroll-reveals. All motion gated
   behind `prefers-reduced-motion: reduce`.
-- **Pagefind** — instant client-side static search over the docs (the nav `⌕` box).
+- **Pagefind** — instant client-side static search over the docs (the nav `⌕` box). Astro does
+  not produce a search index by itself: the build is `astro build && pagefind --site dist`
+  (wired as the package `build` script). Pagefind crawls `dist/` post-build and emits its index +
+  UI assets to `dist/pagefind/` (gitignored). The nav search loads `/pagefind/pagefind.js`
+  dynamically on first focus and queries client-side — no server, no API.
 - **Fonts:** Bungee + Archivo Black, self-hosted as woff2.
 - **Palette:** cobalt `#1A4FE6`, red `#E62B33`, signpost yellow `#FFD81F`, ink `#0E0E10`.
 
@@ -84,11 +102,20 @@ Synced from `sonic-engine`:
 logs, ArchUnit evaluations, doc-gap audits, disassembly mirrors, `*.htm` research dumps.
 
 `sync-docs.mjs`:
-- Reads from a configurable local path (default `../sonic-engine`).
+- **Source path:** resolved from `--engine-path <dir>` CLI arg, else `$OPENGGF_ENGINE_PATH` env
+  var, else default `../sonic-engine` (this matches the local checkout folder name — note the
+  GitHub repo is `OpenGGF` but the working copy here is `sonic-engine`). The script does **not**
+  clone or fetch; it reads an existing local checkout.
+- **Expected branch:** `develop` (the active branch). The script logs the detected branch and
+  warns (does not fail) if it differs, so a release-tag checkout can still be synced deliberately.
+- **Validation:** if the resolved path doesn't exist or isn't a git repo containing
+  `docs/guide/`, exit non-zero with a clear message, e.g.
+  `sync-docs: engine repo not found at "<path>". Pass --engine-path or set OPENGGF_ENGINE_PATH.`
 - Copies only the allowlist into `src/content/docs/`, normalising frontmatter (title, group,
   order) and rewriting relative links between docs.
 - Output is committed (vendored) so the Cloudflare build needs only the webzone repo — fast,
-  reproducible, offline-capable. Re-run + push to publish doc changes.
+  reproducible, offline-capable. Re-run + push to publish doc changes. (CI never runs the sync;
+  it builds from the vendored copy.)
 
 ## 5. Homepage ("Signpost Stack" layout, A)
 
@@ -102,7 +129,12 @@ Vertical scroll story, sticky nav, sections in order:
    - Bungee `OpenGGF` with thick black stroke; yellow **Archivo Black italic** "Open-Source Sonic
      Engine" subtitle (styled like the deck's "Trace"); ink sub-plate "OpenGL-accelerated ·
      accurate · Java".
-   - Rotated yellow **version act-plate** (top-right), version pulled dynamically.
+   - Rotated yellow **version act-plate** (top-right). **Version source:** the tag name of the
+     latest **non-prerelease** GitHub Release of `jamesj999/OpenGGF` (same build-time fetch as the
+     Releases section, single shared fetch). **Fallbacks, in order:** if no stable release exists,
+     use the latest prerelease and mark it `(pre)`; if the API fails or returns nothing, fall back
+     to a build-time-injected `SITE_FALLBACK_VERSION` constant and, failing that, hide the plate
+     rather than render an error. The fetch is non-fatal — an API failure never breaks the build.
    - **Hero video placeholder:** poster image + `<video>` slot, autoplay/muted/loop/playsinline,
      `prefers-reduced-motion` falls back to the poster. Real video to be created later.
    - CTAs: Download (yellow) + Read the Docs.
@@ -129,17 +161,21 @@ Section headers: **skewed act-plate headers** (style A). Sections alternate pape
 
 ## 7. Data Sources
 
-| Surface   | Source                                                      | When        |
-|-----------|------------------------------------------------------------|-------------|
-| Downloads | Latest **GitHub Releases assets** of `jamesj999/OpenGGF`    | build time  |
-| Releases  | **GitHub Releases API** (`jamesj999/OpenGGF`)              | build time  |
-| News      | Markdown posts in `src/content/news/` → cards + index + RSS | build time  |
-| FAQ       | `src/data/faq.yaml`                                         | build time  |
-| Docs      | Vendored sync from `sonic-engine` allowlist                | sync script |
+| Surface      | Source                                                      | When / refresh                  |
+|--------------|------------------------------------------------------------|---------------------------------|
+| Downloads    | Latest **GitHub Releases assets** of `jamesj999/OpenGGF`    | build time; release-hook rebuild|
+| Releases     | **GitHub Releases API** (`jamesj999/OpenGGF`)              | build time; release-hook rebuild|
+| Hero version | Latest non-prerelease tag (same fetch as Releases)         | build time; release-hook rebuild|
+| News         | Markdown posts in `src/content/news/` → cards + index + RSS | build time (webzone push)       |
+| FAQ          | `src/data/faq.yaml`                                         | build time (webzone push)       |
+| Docs         | Vendored sync from engine allowlist                        | sync script + webzone push      |
 
-Per-OS download mapping lives in `download-platforms.yaml` (label/icon → asset-name matcher), so
-new release asset naming can be handled without code changes. GitHub API calls at build use an
-optional token to avoid rate limits in CI.
+The three GitHub-sourced surfaces share a **single build-time fetch** of the Releases API and stay
+current via the **release-triggered rebuild** (§2). Per-OS download mapping lives in
+`download-platforms.yaml` (label/icon → asset-name matcher), so new release asset naming is handled
+without code changes. The build uses an optional `GITHUB_TOKEN` to avoid API rate limits in CI; the
+fetch is wrapped so any failure degrades gracefully (see hero version fallback) rather than failing
+the build.
 
 ## 8. Components (isolation & responsibilities)
 
@@ -166,3 +202,6 @@ Each is independently testable with a clear interface:
 - **openggf.com DNS cutover** — performed at deploy time once Pages is live.
 - **Webzone GitHub repo + Pages project** — created at deploy time (private repo, connect to
   Pages, add custom domain).
+- **Release webhook wiring** — create the Pages Deploy Hook, store its URL as a secret in
+  `jamesj999/OpenGGF`, and add the `on: release: [published]` workflow there (§2). Required for the
+  "latest" promise; done at deploy time since it touches the engine repo and Pages settings.
