@@ -1,6 +1,11 @@
 @import '@fontsource/bungee/400.css';
 @import '@fontsource/archivo-black/400.css';
 
+/* Game title-card / cutscene fonts (royalty-free, self-hosted) */
+@font-face { font-family: 'Jacked';   src: url('/fonts/Jacked.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Gaslight'; src: url('/fonts/Gaslight Regular.ttf') format('truetype'); font-display: swap; }
+@font-face { font-family: 'Andes';    src: url('/fonts/Andes.ttf') format('truetype'); font-display: swap; }
+
 :root {
   --ogf-blue: #1A4FE6;
   --ogf-red: #E62B33;
@@ -10,6 +15,10 @@
   --font-display: 'Bungee', Impact, sans-serif;
   --font-black: 'Archivo Black', 'Arial Black', sans-serif;
   --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* game title-card fonts */
+  --font-s2-title: 'Jacked', var(--font-display);
+  --font-s2-text: 'Gaslight', var(--font-black);
+  --font-s3k-text: 'Andes', var(--font-black);
 }
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { font-family: var(--font-body); color: var(--ogf-ink); }
