@@ -38,9 +38,16 @@ appear until the next webzone push. To keep the "latest" promise:
 
 - Create a **Cloudflare Pages Deploy Hook** for the webzone project (a unique POST URL that
   triggers a production rebuild).
-- Add a **GitHub Action in `jamesj999/OpenGGF`** triggered `on: release: [published]` that `POST`s
-  to the deploy hook (URL stored as a repo secret). New releases trigger a webzone rebuild within
-  minutes; the site stays static and CDN-cached.
+- Add a **GitHub Action in `jamesj999/OpenGGF`** that `POST`s to the deploy hook (URL stored as a
+  repo secret). New releases trigger a webzone rebuild within minutes; the site stays static and
+  CDN-cached. Canonical trigger (note the `types` key — `on: release: [published]` is **not** valid
+  workflow YAML):
+
+  ```yaml
+  on:
+    release:
+      types: [published]
+  ```
 - This is a deploy-time wiring step (the hook URL + the workflow live in the engine repo), tracked
   as an open item, but it is a **required** part of the design, not optional polish.
 
@@ -81,6 +88,7 @@ openggf-webzone/
     data/
       faq.yaml             # FAQ entries
       download-platforms.yaml  # OS labels/icons -> release-asset matchers
+      releases.cache.json  # committed last-known-good GitHub release data (fallback)
     pages/
       index.astro          # homepage
       news/[...slug].astro, news/index.astro
@@ -174,8 +182,31 @@ The three GitHub-sourced surfaces share a **single build-time fetch** of the Rel
 current via the **release-triggered rebuild** (§2). Per-OS download mapping lives in
 `download-platforms.yaml` (label/icon → asset-name matcher), so new release asset naming is handled
 without code changes. The build uses an optional `GITHUB_TOKEN` to avoid API rate limits in CI; the
-fetch is wrapped so any failure degrades gracefully (see hero version fallback) rather than failing
-the build.
+fetch is wrapped so any failure degrades gracefully rather than failing the build.
+
+### Degradation contract (failure / empty state)
+
+The "non-fatal build" requirement is not enough on its own — implementers must hit these exact
+behaviours so a degraded fetch never ships empty or broken primary CTAs. Tiering per surface:
+
+- **Cached snapshot (preferred middle tier):** the successful fetch result is written to a
+  committed `src/data/releases.cache.json`. On fetch failure the build uses this last-known-good
+  snapshot, so the site still renders real (if slightly stale) data. A successful fetch always
+  refreshes it.
+- **Downloads:**
+  - *Live or cached data present* → per-OS buttons as designed.
+  - *An OS has no matching asset* → that OS button links to the GitHub Releases **page** (not a
+    dead/hidden button) with a small "find your build" note.
+  - *No data at all (fetch failed, no cache)* → replace the per-OS row with a **single primary
+    "Download from GitHub →" button** linking to `…/releases/latest`. The CTA is never empty.
+- **Releases:**
+  - *Live or cached data present* → version list + changelog as designed.
+  - *No data at all* → render a compact "View all releases on GitHub →" link-out card instead of
+    an empty list. No empty section, no error text.
+- **Hero version:** as already specified — latest stable tag → prerelease `(pre)` →
+  `SITE_FALLBACK_VERSION` → hide plate.
+
+In all cases the build succeeds; the difference is purely which fallback render is emitted.
 
 ## 8. Components (isolation & responsibilities)
 
@@ -203,5 +234,6 @@ Each is independently testable with a clear interface:
 - **Webzone GitHub repo + Pages project** — created at deploy time (private repo, connect to
   Pages, add custom domain).
 - **Release webhook wiring** — create the Pages Deploy Hook, store its URL as a secret in
-  `jamesj999/OpenGGF`, and add the `on: release: [published]` workflow there (§2). Required for the
-  "latest" promise; done at deploy time since it touches the engine repo and Pages settings.
+  `jamesj999/OpenGGF`, and add the release-triggered workflow there (the `on: { release: { types:
+  [published] } }` shape from §2). Required for the "latest" promise; done at deploy time since it
+  touches the engine repo and Pages settings.
