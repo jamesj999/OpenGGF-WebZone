@@ -28,6 +28,11 @@ try {
 const ALLOW_DIRS = ['docs/guide'];
 const ALLOW_FILES = ['CONFIGURATION.md', 'ROADMAP.md', 'CREDITS.md', 'CONTRIBUTING.md'];
 
+// Denylist: skip any markdown file whose basename (uppercased, no .md) matches one of these.
+const DENY_BASENAMES = new Set(['PLAN', 'TODO', 'DRAFT', 'WIP', 'INTERNAL', 'SCRATCH', 'NOTES']);
+
+const isDenied = (name) => DENY_BASENAMES.has(name.replace(/\.md$/i, '').toUpperCase());
+
 const groupFor = (rel) => {
   if (rel.includes('/playing/')) return 'Players';
   if (rel.includes('/contributing/')) return 'Contributors';
@@ -38,35 +43,74 @@ const titleFor = (txt, rel) => {
   const h1 = txt.match(/^#\s+(.+)$/m);
   return h1 ? h1[1].trim() : rel.split('/').pop().replace(/\.md$/, '');
 };
-// Rewrite ./foo.md and ../bar/baz.md links to /docs/... slugs. Use POSIX path semantics:
-// node:path.resolve() is OS-specific and would emit a drive-qualified "C:/docs/..." on
-// Windows. relDir is always POSIX (slugs use forward slashes), so posix.join + normalize
-// collapses ./ and ../ correctly and yields a clean site URL on every platform.
-const rewriteLinks = (txt, relDir) => txt.replace(/\]\((\.[^)]+?)\.md(#[^)]*)?\)/g, (_, p, hash) => {
-  const target = posix.normalize(posix.join('/docs', relDir, p));
-  return `](${target}${hash || ''})`;
-});
 
-function copyMd(absSrc, relFromEngine) {
-  // Map engine path to docs slug: strip leading "docs/" for guide files.
-  const slug = relFromEngine.replace(/^docs\//, '');
-  const dest = join(OUT, slug);
-  const raw = readFileSync(absSrc, 'utf8');
-  const title = titleFor(raw, slug);
-  const group = groupFor('/' + slug);
-  const body = rewriteLinks(raw, posix.dirname(slug));   // slug is POSIX; keep URL math POSIX
-  const fm = `---\ntitle: ${JSON.stringify(title)}\ngroup: ${JSON.stringify(group)}\norder: 99\n---\n\n`;
-  mkdirSync(dirname(dest), { recursive: true });
-  writeFileSync(dest, fm + body);
+// ─── Pass A: collect all synced files into a repoPath→slug map ─────────────
+// repoPath: POSIX path relative to engine root, e.g. "docs/guide/playing/controls.md"
+// slug:     output route WITHOUT .md, e.g. "guide/playing/controls"
+//           guide files: strip leading "docs/"; root files: "reference/<lowercased-basename>"
+
+/** @type {Array<{absSrc: string, repoPath: string, slug: string}>} */
+const records = [];
+/** @type {Map<string, string>} repoPath (with .md) → slug (no .md) */
+const repoPathToSlug = new Map();
+
+function collectDir(absDir, relDir) {
+  for (const name of readdirSync(absDir)) {
+    if (isDenied(name)) continue;
+    const abs = join(absDir, name);
+    const rel = join(relDir, name).replace(/\\/g, '/');  // keep POSIX
+    if (statSync(abs).isDirectory()) collectDir(abs, rel);
+    else if (name.endsWith('.md')) {
+      // repoPath = rel (e.g. "docs/guide/playing/controls.md")
+      // slug = strip leading "docs/" then strip ".md"
+      const slug = rel.replace(/^docs\//, '').replace(/\.md$/, '');
+      records.push({ absSrc: abs, repoPath: rel, slug });
+      repoPathToSlug.set(rel, slug);
+    }
+  }
 }
 
-function walk(absDir, relDir) {
-  for (const name of readdirSync(absDir)) {
-    const abs = join(absDir, name);
-    const rel = join(relDir, name).replace(/\\/g, '/');
-    if (statSync(abs).isDirectory()) walk(abs, rel);
-    else if (name.endsWith('.md')) copyMd(abs, rel);
+for (const d of ALLOW_DIRS) {
+  const abs = join(enginePath, d);
+  if (existsSync(abs)) collectDir(abs, d);
+}
+for (const f of ALLOW_FILES) {
+  if (isDenied(f)) continue;
+  const abs = join(enginePath, f);
+  if (existsSync(abs)) {
+    // root files: slug = "reference/<lowercased-basename-no-md>"
+    const slug = 'reference/' + f.toLowerCase().replace(/\.md$/, '');
+    const repoPath = f;  // e.g. "CONTRIBUTING.md"
+    records.push({ absSrc: abs, repoPath, slug });
+    repoPathToSlug.set(repoPath, slug);
   }
+}
+
+// ─── Pass B: rewrite links, inject frontmatter, write output ───────────────
+
+/**
+ * Rewrite every relative .md link in `txt`.
+ * - Matches links that are NOT protocol (http:/https:/mailto:), NOT site-absolute (/),
+ *   NOT anchor-only (#).
+ * - Resolved against the SOURCE file's repoPath directory (POSIX).
+ * - Synced target → /docs/<slug>[hash]
+ * - Non-synced target → GitHub blob URL[hash]
+ */
+const GITHUB_BASE = 'https://github.com/jamesj999/OpenGGF/blob/develop/';
+const LINK_RE = /\]\(((?!https?:|mailto:|\/|#)[^)\s]+?)\.md(#[^)]*)?\)/g;
+
+function rewriteLinks(txt, repoPath) {
+  const srcDir = posix.dirname(repoPath);
+  return txt.replace(LINK_RE, (_, p, hash) => {
+    // Resolve relative to source file's repo directory
+    const targetRepo = posix.normalize(posix.join(srcDir, p + '.md'));
+    if (repoPathToSlug.has(targetRepo)) {
+      const slug = repoPathToSlug.get(targetRepo);
+      return `](/docs/${slug}${hash || ''})`;
+    }
+    // Non-synced: GitHub blob fallback (strip .md so the URL stays clean)
+    return `](${GITHUB_BASE}${targetRepo.replace(/\.md$/, '')}${hash || ''})`;
+  });
 }
 
 // Prune stale output: regenerate the vendored docs from scratch each run so deleted,
@@ -74,9 +118,16 @@ function walk(absDir, relDir) {
 rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 
-for (const d of ALLOW_DIRS) { const abs = join(enginePath, d); if (existsSync(abs)) { walk(abs, d); } }
-for (const f of ALLOW_FILES) {
-  const abs = join(enginePath, f);
-  if (existsSync(abs)) copyMd(abs, 'docs/reference/' + f.toLowerCase().replace(/\.md$/, '') + '.md');
+let count = 0;
+for (const { absSrc, repoPath, slug } of records) {
+  const dest = join(OUT, slug + '.md');
+  const raw = readFileSync(absSrc, 'utf8');
+  const title = titleFor(raw, slug);
+  const group = groupFor('/' + slug);
+  const body = rewriteLinks(raw, repoPath);
+  const fm = `---\ntitle: ${JSON.stringify(title)}\ngroup: ${JSON.stringify(group)}\norder: 99\n---\n\n`;
+  mkdirSync(dirname(dest), { recursive: true });
+  writeFileSync(dest, fm + body);
+  count++;
 }
-console.log(`sync-docs: synced from ${enginePath}`);
+console.log(`sync-docs: synced ${count} docs from ${enginePath}`);
