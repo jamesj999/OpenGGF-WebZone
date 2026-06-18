@@ -1,0 +1,21 @@
+# Brainstorming companion mockups (local only)
+.superpowers/
+
+# Dependencies / build
+node_modules/
+dist/
+.astro/
+
+# Env / secrets
+.env
+.env.*
+.dev.vars
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Pagefind output
+public/pagefind/
