@@ -1,13 +1,21 @@
 ---
-interface Props { color?: string; overlap?: string; }
-// Pale page-coloured zig teeth that OVERLAY the bottom of the hero, biting UP into
-// the yellow/red. The element is pulled up by `overlap` so its peaks (clip y=0)
-// poke into the hero; the yellow/red shows in the notches; below it the page
-// continues seamlessly. 13 teeth to match the hero's red pane.
-const { color = 'var(--ogf-paper)', overlap = '26px' } = Astro.props;
-const clip = 'polygon(0% 100%,100% 100%,100% 55%,96.15% 0%,92.31% 55%,88.46% 0%,84.62% 55%,80.77% 0%,76.92% 55%,73.08% 0%,69.23% 55%,65.38% 0%,61.54% 55%,57.69% 0%,53.85% 55%,50% 0%,46.15% 55%,42.31% 0%,38.46% 55%,34.62% 0%,30.77% 55%,26.92% 0%,23.08% 55%,19.23% 0%,15.38% 55%,11.54% 0%,7.69% 55%,3.85% 0%,0% 55%)';
+interface Props { color?: string; toothWidth?: string; }
+// Pale page-coloured zig teeth overlaying the hero's bottom edge, biting UP into
+// the yellow/red. Tooth size is FIXED (a repeating SVG mask sized in px), so teeth
+// stay the same size at any viewport width — the count adapts. A solid pale band
+// below the teeth extends ~10px past the hero into the next section, so there's no
+// seam/gap. One mask tile = one tooth (apex up, ~60% height; solid band ~40%).
+const { color = 'var(--ogf-paper)', toothWidth = '30px' } = Astro.props;
 ---
-<div class="zig" style={`background:${color};clip-path:${clip};height:${overlap};margin-top:calc(-1 * ${overlap});`}></div>
+<div class="zig" style={`background:${color};--tw:${toothWidth};`}></div>
 <style>
-  .zig { position: relative; z-index: 5; width: 100%; }
+  .zig {
+    position: relative; z-index: 5; width: 100%;
+    height: 26px; margin-top: -16px; margin-bottom: -10px;
+    --tw: 30px;
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10 H10 V6 L5 0 L0 6 Z' fill='black'/%3E%3C/svg%3E") repeat-x;
+            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10 H10 V6 L5 0 L0 6 Z' fill='black'/%3E%3C/svg%3E") repeat-x;
+    -webkit-mask-size: var(--tw) 100%;
+            mask-size: var(--tw) 100%;
+  }
 </style>

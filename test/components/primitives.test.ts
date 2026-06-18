@@ -12,14 +12,14 @@ describe('primitives', () => {
     expect(html).toContain('polygon');
     expect(html).toContain('#E62B33');
   });
-  it('ZigzagDivider emits a clip-path polygon, uses default color, and accepts a custom color', async () => {
+  it('ZigzagDivider renders a fixed-size masked tooth strip, default + custom colour', async () => {
     const c = await AstroContainer.create();
     const defaultHtml = await c.renderToString(ZigzagDivider, { props: {} });
-    expect(defaultHtml).toContain('clip-path');
-    expect(defaultHtml).toContain('polygon');
-    expect(defaultHtml).toContain('var(--ogf-paper)');
-    const customHtml = await c.renderToString(ZigzagDivider, { props: { color: '#E62B33' } });
+    expect(defaultHtml).toContain('var(--ogf-paper)');   // pale default colour
+    expect(defaultHtml).toContain('--tw:30px');          // fixed tooth width (px, not %)
+    const customHtml = await c.renderToString(ZigzagDivider, { props: { color: '#E62B33', toothWidth: '40px' } });
     expect(customHtml).toContain('#E62B33');
+    expect(customHtml).toContain('--tw:40px');
   });
   it('ActPlateHeader renders label text', async () => {
     const c = await AstroContainer.create();
