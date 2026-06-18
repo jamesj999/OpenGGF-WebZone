@@ -12,7 +12,7 @@ const links = [
   {links.map((l) => <a href={l.href}>{l.label}</a>)}
   <span class="sp"></span>
   <button id="nav-search" aria-label="Search docs">⌕ Search</button>
-  <a class="gh" href="https://github.com/jamesj999/OpenGGF">GitHub ★</a>
+  <a class="gh" href="https://github.com/jamesj999/OpenGGF"><i class="fa-brands fa-github" aria-hidden="true"></i> GitHub</a>
 </nav>
 <div id="search-modal" hidden>
   <div class="backdrop"></div>
@@ -38,5 +38,6 @@ const links = [
   .sp { flex: 1; }
   #nav-search { background: #2a2c44; color: #aeb2d6; border: none; border-radius: 6px;
     padding: 6px 12px; font: 700 12px var(--font-body); cursor: pointer; }
-  .gh { background: var(--ogf-yellow); color: var(--ogf-ink); padding: 6px 12px; border-radius: 6px; }
+  .nav a.gh { background: var(--ogf-yellow); color: var(--ogf-ink); padding: 6px 12px; border-radius: 6px; }
+  .nav a.gh .fa-github { margin-right: 5px; }
 </style>

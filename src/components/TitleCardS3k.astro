@@ -36,26 +36,30 @@ const ver = shortVersion(version);
   .s3k-banner {
     width: clamp(90px, 11vw, 150px); height: clamp(260px, 46vh, 420px);
     background: var(--ogf-red); border: 4px solid var(--ogf-ink);
-    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 16%;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 7%;
     animation: s3k-drop .55s cubic-bezier(.18,.7,.2,1) both;
   }
-  .s3k-banner-label { font-family: var(--font-s3k-text); color: #fff; font-size: clamp(14px, 1.6vw, 22px);
-    letter-spacing: 1px; text-align: center; line-height: 1.15; }
+  /* label NOT in the title font — a plain heavy sans, like a stamped sub-brand */
+  .s3k-banner-label { font-family: var(--font-body); font-weight: 900; text-transform: uppercase;
+    color: #fff; font-size: clamp(13px, 1.5vw, 20px); letter-spacing: 2px; text-align: center; line-height: 1.2; }
 
   .s3k-text { display: flex; flex-direction: column; align-items: flex-start; }
   .s3k-name {
     font-family: var(--font-s3k-text); color: #e9e9f2; font-size: clamp(44px, 8vw, 116px);
     line-height: .95; letter-spacing: 2px; padding: 0 .06em;
     /* grey block behind the bottom half of the text (as in the real S3&K card; no shadow) */
-    background: linear-gradient(to bottom, transparent 0 52%, #5b5b68 52% 100%);
+    background: linear-gradient(to bottom, transparent 0 52%, #3c3c46 52% 100%);
     animation: s3k-inR .55s ease-out .12s both;
   }
+  /* version block aligned to the wordmark's right edge, in a plain heavy sans (NOT the
+     title font) — reads as a spec stamp under the silver name */
   .s3k-ver {
-    display: inline-flex; align-items: baseline; gap: 8px; margin-top: .14em;
-    font-family: var(--font-s3k-text); animation: s3k-inR .55s ease-out .24s both;
+    align-self: flex-end; display: inline-flex; align-items: baseline; gap: 8px; margin-top: .18em;
+    font-family: var(--font-body); animation: s3k-inR .55s ease-out .24s both;
   }
-  .s3k-ver span { color: #fff; font-size: clamp(16px, 1.9vw, 26px); letter-spacing: 1px; }
-  .s3k-ver b { color: var(--ogf-yellow); font-size: clamp(30px, 3.6vw, 50px);
+  .s3k-ver span { color: #fff; font-weight: 900; text-transform: uppercase;
+    font-size: clamp(14px, 1.6vw, 22px); letter-spacing: 2px; }
+  .s3k-ver b { color: var(--ogf-yellow); font-weight: 900; font-size: clamp(28px, 3.3vw, 46px);
     -webkit-text-stroke: 1px #0006; line-height: 1; }
 
   .s3k-tagline {

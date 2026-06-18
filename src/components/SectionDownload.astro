@@ -12,13 +12,13 @@ const LATEST = 'https://github.com/jamesj999/OpenGGF/releases/latest';
     <div class="grid">
       {matches.map(({ platform, assetUrl }) => (
         <a class="dl" href={assetUrl ?? RELEASES}>
-          <span class="icon">{platform.icon}</span>{platform.label}
+          <span class="icon"><i class={platform.icon} aria-hidden="true"></i></span>{platform.label}
           {!assetUrl && <span class="note">find your build</span>}
         </a>
       ))}
     </div>
   ) : (
-    <a class="dl single" href={LATEST}>⬇ Download from GitHub →</a>
+    <a class="dl single" href={LATEST}><i class="fa-brands fa-github" aria-hidden="true"></i> Download from GitHub →</a>
   )}
   <p class="req">Requires a legally-obtained ROM. JDK 21+.</p>
 </section>

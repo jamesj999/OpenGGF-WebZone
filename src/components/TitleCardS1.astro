@@ -34,10 +34,10 @@ const ver = shortVersion(version);
     font-size: clamp(40px, 8vw, 96px); letter-spacing: 2px; line-height: 1;
     animation: s1-inL .5s ease-out both;
   }
-  /* lavender organic blob to the lower-right; the wordmark's right edge just touches it */
+  /* lavender organic blob behind the wordmark's right end, vertically centred on it */
   .s1-blob {
-    position: absolute; z-index: 0; right: -6%; top: 64%;
-    width: 38%; aspect-ratio: 1.05; transform: rotate(-12deg);
+    position: absolute; z-index: 0; right: -6%; top: 50%;
+    width: 38%; aspect-ratio: 1.05; transform: translateY(-50%) rotate(-12deg);
     background: #9a9ae6; border-radius: 62% 38% 56% 44% / 58% 46% 54% 42%;
     animation: s1-pop .45s ease-out .2s both;
   }

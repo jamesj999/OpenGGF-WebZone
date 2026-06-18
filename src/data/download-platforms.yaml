@@ -1,4 +1,4 @@
 # src/data/download-platforms.yaml
-- { id: win,   label: Windows, icon: "🪟", match: "windows|win|\\.exe|\\.msi" }
-- { id: mac,   label: macOS,   icon: "🍎", match: "mac|darwin|\\.dmg|\\.pkg" }
-- { id: linux, label: Linux,   icon: "🐧", match: "linux|\\.AppImage|\\.deb|\\.tar\\.gz" }
+- { id: win,   label: Windows, icon: "fa-brands fa-windows", match: "windows|win|\\.exe|\\.msi" }
+- { id: mac,   label: macOS,   icon: "fa-brands fa-apple",   match: "mac|darwin|\\.dmg|\\.pkg" }
+- { id: linux, label: Linux,   icon: "fa-brands fa-linux",   match: "linux|\\.AppImage|\\.deb|\\.tar\\.gz" }

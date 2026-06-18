@@ -91,10 +91,13 @@ const ver = shortVersion(version);
     /* white wordmark with a hard straight-down black shadow (matches the teeth) */
     filter: drop-shadow(0 8px 0 var(--ogf-ink));
   }
-  /* version in the title font, yellow, bigger, right-aligned below the wordmark */
+  /* version in the title font, yellow, below the wordmark. Right-aligned to the
+     wordmark's glyph edge: the SVG has 7.5% whitespace right of the "F" (glyph bbox
+     ends at x=592 of the 640 viewBox), so pad the right by that to line them up. */
   .tc-ver {
     font-family: 'Jacked', var(--font-display); color: var(--ogf-yellow);
-    font-size: clamp(34px, 5vw, 76px); line-height: .9; text-align: right; margin-top: .04em;
+    font-size: clamp(34px, 5vw, 76px); line-height: .9; text-align: right;
+    margin-top: .04em; padding-right: 7.5%;
   }
   /* tagline moved up into the blue, under the wordmark (where ZONE used to be) */
   .tc-tagline {
