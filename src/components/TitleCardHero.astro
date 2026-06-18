@@ -22,7 +22,7 @@ const { version, videoSrc, posterSrc = '/media/hero-poster.svg' } = Astro.props;
   <div class="tc-yellow" data-tc="yellow"></div>
   <div class="tc-red" data-tc="red"><div class="tc-red-shape"></div></div>
 
-  <h1 class="tc-zone" data-tc="zone">OpenGGF</h1>
+  <h1 class="tc-zone" data-tc="zone"><img src="/media/titletext.png" width="730" height="183" alt="OpenGGF" /></h1>
   <p class="tc-tagline" data-tc="bar">Open-Source Sonic Engine</p>
 
   {version && (
@@ -87,12 +87,11 @@ const { version, videoSrc, posterSrc = '/media/hero-poster.svg' } = Astro.props;
   }
 
   /* content sits in the blue area, clear of the red block */
-  .tc-zone {
-    position: absolute; left: max(27%, 360px); right: 2%; top: 19%; z-index: 5;
-    font-family: var(--font-display);
-    font-size: clamp(52px, 11vw, 140px); line-height: .85;
-    color: #fff; -webkit-text-stroke: clamp(3px, 0.6vw, 7px) var(--ogf-ink);
-    paint-order: stroke fill;
+  /* official OpenGGF logo image (titletext.png) */
+  .tc-zone { position: absolute; left: max(27%, 360px); right: 2%; top: 17%; z-index: 5; margin: 0; }
+  .tc-zone img {
+    display: block; width: clamp(280px, 42vw, 620px); height: auto; max-width: 100%;
+    filter: drop-shadow(4px 5px 0 rgba(14, 14, 16, 0.35));
   }
   /* tagline moved up into the blue, under the wordmark (where ZONE used to be) */
   .tc-tagline {
