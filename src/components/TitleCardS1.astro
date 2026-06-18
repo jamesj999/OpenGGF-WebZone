@@ -1,16 +1,17 @@
 ---
-// Sonic 1 title card — matched to the real thing: black background, zone name + "ZONE"
-// in a white serif (TeX Gyre Schola), a solid lavender organic blob on the right with
-// "ACT <n>" overlapping it (yellow number). Our zone name is "OpenGGF".
+// Sonic 1 title card: black bg, "OpenGGF" in white serif (Schola) aligned over a solid
+// lavender blob, with "VER <short>" (where ACT sits) on the blob. No "ZONE". Version is
+// pruned to major.minor; if it can't be parsed, the VER label + number are hidden.
+import { shortVersion } from '../lib/releases';
 interface Props { version: { label: string; isPre: boolean } | null; }
 const { version } = Astro.props;
+const ver = shortVersion(version);
 ---
 <section class="s1" data-hero="s1" aria-label="OpenGGF — Open-Source Sonic Engine">
   <div class="s1-stage">
     <div class="s1-blob" aria-hidden="true"></div>
     <h1 class="s1-name">OpenGGF</h1>
-    <div class="s1-zone">ZONE</div>
-    <div class="s1-act"><span>ACT</span><b>{version ? version.label : '1'}</b></div>
+    {ver && <div class="s1-ver"><span>VER</span><b>{ver}</b></div>}
   </div>
   <p class="s1-tagline">Open-Source Sonic Engine</p>
   <div class="s1-ctas">
@@ -22,40 +23,34 @@ const { version } = Astro.props;
 <style>
   .s1 { position: relative; width: 100%; height: clamp(480px, 84vh, 820px);
     overflow: hidden; background: #000; isolation: isolate;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(28px, 6vh, 70px); }
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(30px, 7vh, 80px); }
 
-  /* the title-card composition lives in a centred stage so name/zone/blob/act align */
-  .s1-stage { position: relative; width: min(720px, 86vw); }
+  /* stage shrinks to the wordmark so the blob can be aligned over its right side */
+  .s1-stage { position: relative; display: inline-block; }
 
   .s1-name {
+    position: relative; z-index: 2; margin: 0; text-transform: uppercase;
     font-family: var(--font-s1-text); font-weight: 700; color: #fff;
     font-size: clamp(40px, 8vw, 96px); letter-spacing: 2px; line-height: 1;
-    text-align: center; margin: 0;
     animation: s1-inL .5s ease-out both;
   }
-  .s1-zone {
-    font-family: var(--font-s1-text); font-weight: 700; color: #fff;
-    font-size: clamp(30px, 6vw, 72px); letter-spacing: 6px; line-height: 1;
-    text-align: center; margin-top: .12em;
-    animation: s1-inL .5s ease-out .12s both;
-  }
-  /* lavender organic blob behind the act, lower-right (clear of ZONE) */
+  /* lavender organic blob to the lower-right; the wordmark's right edge just touches it */
   .s1-blob {
-    position: absolute; right: -4%; bottom: -18%; width: clamp(150px, 28%, 230px); aspect-ratio: 1.1;
-    background: #9a9ae6;
-    border-radius: 62% 38% 56% 44% / 58% 46% 54% 42%;
-    transform: rotate(-12deg); z-index: -1;
+    position: absolute; z-index: 0; right: -6%; top: 66%;
+    width: 38%; aspect-ratio: 1.05;
+    transform: rotate(-12deg);
+    background: #9a9ae6; border-radius: 62% 38% 56% 44% / 58% 46% 54% 42%;
     animation: s1-pop .45s ease-out .2s both;
   }
-  /* ACT + version, stacked + centred over the blob so the long version doesn't hit ZONE */
-  .s1-act {
-    position: absolute; right: 1%; bottom: -6%; width: clamp(140px, 26%, 210px);
-    display: flex; flex-direction: column; align-items: center; text-align: center; line-height: 1.05;
-    animation: s1-pop .45s ease-out .28s both;
+  /* VER + pruned version on the blob, BELOW the wordmark (where ACT sits) */
+  .s1-ver {
+    position: absolute; z-index: 3; right: 0; top: 96%;
+    width: 34%; display: flex; flex-direction: column; align-items: center; line-height: 1;
+    animation: s1-inUp .45s ease-out .3s both;
   }
-  .s1-act span { font-family: var(--font-s1-text); font-weight: 700; color: #fff; font-size: clamp(13px, 1.5vw, 18px); letter-spacing: 1px; }
-  .s1-act b { font-family: var(--font-s1-text); font-weight: 700; color: var(--ogf-yellow);
-    font-size: clamp(14px, 1.7vw, 22px); -webkit-text-stroke: .75px #0008; }
+  .s1-ver span { font-family: var(--font-s1-text); font-weight: 700; color: #fff; font-size: clamp(13px, 1.5vw, 18px); letter-spacing: 2px; }
+  .s1-ver b { font-family: var(--font-s1-text); font-weight: 700; color: var(--ogf-yellow);
+    font-size: clamp(26px, 3.2vw, 44px); -webkit-text-stroke: 1px #0007; }
 
   .s1-tagline {
     font-family: var(--font-black); font-style: italic; font-size: clamp(18px, 3vw, 34px);

@@ -39,3 +39,15 @@ export function selectHeroVersion(
   if (fallback) return { label: fallback, isPre: false };
   return null;
 }
+
+/**
+ * Pruned version for the title-card "ACT/VER" slot: drop a leading `v` and keep only
+ * major.minor (everything past the first decimal is removed). Returns null when the
+ * label can't be parsed (so the VER label + number are simply hidden).
+ *   "v0.5.20260502 (prerelease)" -> "0.5"   ·   "v1.2" -> "1.2"   ·   "nightly" -> null
+ */
+export function shortVersion(version: { label: string } | null | undefined): string | null {
+  if (!version?.label) return null;
+  const m = version.label.replace(/^v/i, '').match(/^(\d+\.\d+)/);
+  return m ? m[1] : null;
+}
