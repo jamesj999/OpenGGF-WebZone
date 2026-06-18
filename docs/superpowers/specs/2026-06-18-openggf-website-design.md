@@ -191,14 +191,14 @@ Section headers: **skewed act-plate headers** (style A). Sections alternate pape
 
 ## 7. Data Sources
 
-| Surface      | Source                                                      | When / refresh                  |
-|--------------|------------------------------------------------------------|---------------------------------|
-| Downloads    | Latest **GitHub Releases assets** of `jamesj999/OpenGGF`    | build time; release-hook rebuild|
-| Releases     | **GitHub Releases API** (`jamesj999/OpenGGF`)              | build time; release-hook rebuild|
-| Hero version | Latest non-prerelease tag (same fetch as Releases)         | build time; release-hook rebuild|
-| News         | Markdown posts in `src/content/news/` → cards + index + RSS | build time (webzone push)       |
-| FAQ          | `src/data/faq.yaml`                                         | build time (webzone push)       |
-| Docs         | Vendored sync from engine allowlist                        | sync script + webzone push      |
+| Surface      | Source                                                      | When / refresh                       |
+|--------------|------------------------------------------------------------|--------------------------------------|
+| Downloads    | Latest **GitHub Releases assets** of `jamesj999/OpenGGF`    | build time; cache-refresh workflow + webzone push (§2) |
+| Releases     | **GitHub Releases API** (`jamesj999/OpenGGF`)              | build time; cache-refresh workflow + webzone push (§2) |
+| Hero version | Latest non-prerelease tag (same fetch as Releases)         | build time; cache-refresh workflow + webzone push (§2) |
+| News         | Markdown posts in `src/content/news/` → cards + index + RSS | build time (webzone push)            |
+| FAQ          | `src/data/faq.yaml`                                         | build time (webzone push)            |
+| Docs         | Vendored sync from engine allowlist                        | sync script + webzone push           |
 
 The three GitHub-sourced surfaces share a **single build-time fetch** of the Releases API and stay
 current via the **release-triggered rebuild** (§2). Per-OS download mapping lives in
@@ -260,7 +260,7 @@ Each is independently testable with a clear interface:
 - **Webzone GitHub repo + Pages project** — created at deploy time (private repo, connect to
   Pages, add custom domain).
 - **Release webhook wiring** — the cross-repo refresh path from §2: (a) a fine-grained PAT secret
-  granting `repository_dispatch` to `openggf-webzone`, (b) the `on: release: [published]` workflow
-  in `jamesj999/OpenGGF` that dispatches it, and (c) the `refresh-on-release.yml` workflow in
-  webzone that refreshes the cache, commits, and pushes. Required for the "latest" promise; done at
-  deploy time since it spans both repos.
+  granting `repository_dispatch` to `openggf-webzone`, (b) the release-published workflow in
+  `jamesj999/OpenGGF` that dispatches it (the `release.types: [published]` trigger defined in §2),
+  and (c) the `refresh-on-release.yml` workflow in webzone that refreshes the cache, commits, and
+  pushes. Required for the "latest" promise; done at deploy time since it spans both repos.
