@@ -1,21 +1,41 @@
 ---
 interface Props { color?: string; toothWidth?: string; }
 // Pale page-coloured zig teeth overlaying the hero's bottom edge, biting UP into
-// the yellow/red. Tooth size is FIXED (a repeating SVG mask sized in px), so teeth
-// stay the same size at any viewport width — the count adapts. A solid pale band
-// below the teeth extends ~10px past the hero into the next section, so there's no
-// seam/gap. One mask tile = one tooth (apex up, ~60% height; solid band ~40%).
+// the yellow/red. Tooth size is FIXED (repeating SVG mask sized in px) so teeth
+// stay constant at any viewport width; the count adapts. A solid pale band below
+// the teeth extends past the hero into the next section (no seam/gap).
+//
+// Shadow: a separate dark layer masked to the TEETH ONLY (no band) sits behind the
+// pale and is offset down/right, so each tooth casts a hard shadow into the yellow/
+// red notches — without the band producing a full-width shadow line.
 const { color = 'var(--ogf-paper)', toothWidth = '30px' } = Astro.props;
 ---
-<div class="zig" style={`background:${color};--tw:${toothWidth};`}></div>
+<div class="zig-wrap" style={`--tw:${toothWidth};`}>
+  <div class="zig-shadow"></div>
+  <div class="zig" style={`background:${color};`}></div>
+</div>
 <style>
-  .zig {
+  .zig-wrap {
     position: relative; z-index: 5; width: 100%;
     height: 26px; margin-top: -16px; margin-bottom: -10px;
     --tw: 30px;
-    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10 H10 V6 L5 0 L0 6 Z' fill='black'/%3E%3C/svg%3E") repeat-x;
-            mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10 H10 V6 L5 0 L0 6 Z' fill='black'/%3E%3C/svg%3E") repeat-x;
-    -webkit-mask-size: var(--tw) 100%;
-            mask-size: var(--tw) 100%;
+  }
+  .zig, .zig-shadow {
+    position: absolute; inset: 0;
+    -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;
+    -webkit-mask-size: var(--tw) 100%; mask-size: var(--tw) 100%;
+  }
+  /* pale teeth + solid band (front) */
+  .zig {
+    background: var(--ogf-paper);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10 H10 V6 L5 0 L0 6 Z' fill='black'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 10 H10 V6 L5 0 L0 6 Z' fill='black'/%3E%3C/svg%3E");
+  }
+  /* teeth-only dark shadow (behind), offset down/right */
+  .zig-shadow {
+    background: rgba(14, 14, 16, 0.5);
+    transform: translate(4px, 6px);
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 6 L5 0 L10 6 Z' fill='black'/%3E%3C/svg%3E");
+            mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 6 L5 0 L10 6 Z' fill='black'/%3E%3C/svg%3E");
   }
 </style>
