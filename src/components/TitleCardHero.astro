@@ -20,7 +20,7 @@ const { version, videoSrc, posterSrc = '/media/hero-poster.svg' } = Astro.props;
 
   <div class="tc-blue" data-tc="blue"></div>
   <div class="tc-yellow" data-tc="yellow"></div>
-  <div class="tc-red" data-tc="red"></div>
+  <div class="tc-red" data-tc="red"><div class="tc-red-shape"></div></div>
 
   <h1 class="tc-zone" data-tc="zone">OpenGGF</h1>
   <p class="tc-tagline" data-tc="bar">Open-Source Sonic Engine</p>
@@ -58,15 +58,32 @@ const { version, videoSrc, posterSrc = '/media/hero-poster.svg' } = Astro.props;
                background: var(--ogf-yellow); z-index: 1; }
 
   /* red left block; narrower + capped so the title never extends into it.
-     Right edge is a fine pinking sawtooth (~13 teeth) — the title-card swoosh. */
+     Right edge is a pinking sawtooth via a repeating SVG mask sized in px — like the
+     divider, the tooth size stays constant at any viewport height; the count adapts.
+     Mask tiles vertically (one rightward tooth per --rt). */
   .tc-red {
     position: absolute; left: 0; top: 0; bottom: 0; width: 26%; max-width: 340px;
-    background: var(--ogf-red); z-index: 2;
-    clip-path: polygon(0 0,
-      100% 0%, 94% 4%, 100% 8%, 94% 12%, 100% 16%, 94% 20%, 100% 24%, 94% 28%,
-      100% 32%, 94% 36%, 100% 40%, 94% 44%, 100% 48%, 94% 52%, 100% 56%, 94% 60%,
-      100% 64%, 94% 68%, 100% 72%, 94% 76%, 100% 80%, 94% 84%, 100% 88%, 94% 92%,
-      100% 96%, 94% 100%, 0 100%);
+    z-index: 2;
+    /* hard "shadow" — a black copy of the toothed silhouette, offset. drop-shadow
+       on the WRAPPER follows the child's masked shape; a filter on the masked
+       element itself would be clipped by that mask. */
+    filter: drop-shadow(5px 4px 0 rgba(14, 14, 16, 0.5));
+  }
+  /* Right edge = vertical pinking sawtooth with BOTH tooth depth and pitch fixed in
+     px, so page width never stretches/squashes them. Left part solid; the teeth live
+     in a fixed-width right strip tiled vertically at a fixed pitch. */
+  .tc-red-shape {
+    position: absolute; inset: 0; background: var(--ogf-red);
+    --rd: 18px; /* tooth depth (fixed px) */
+    --rt: 26px; /* tooth pitch (fixed px) */
+    -webkit-mask:
+      linear-gradient(#000 0 0) left center / calc(100% - var(--rd)) 100% no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L10 5 L0 10 Z' fill='black'/%3E%3C/svg%3E") right center / var(--rd) var(--rt) repeat-y;
+    mask:
+      linear-gradient(#000 0 0) left center / calc(100% - var(--rd)) 100% no-repeat,
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10' preserveAspectRatio='none'%3E%3Cpath d='M0 0 L10 5 L0 10 Z' fill='black'/%3E%3C/svg%3E") right center / var(--rd) var(--rt) repeat-y;
+    -webkit-mask-composite: source-over;
+    mask-composite: add;
   }
 
   /* content sits in the blue area, clear of the red block */
