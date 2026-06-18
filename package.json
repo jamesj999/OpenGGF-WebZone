@@ -1,0 +1,27 @@
+{
+  "name": "openggf-webzone",
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && pagefind --site dist",
+    "build:astro": "astro build",
+    "preview": "astro preview",
+    "test": "vitest run",
+    "sync-docs": "node scripts/sync-docs.mjs",
+    "refresh-cache": "node scripts/refresh-cache.mjs"
+  },
+  "dependencies": {
+    "astro": "^4.15.0",
+    "@astrojs/rss": "^4.0.7",
+    "gsap": "^3.12.5",
+    "@fontsource/bungee": "^5.0.0",
+    "@fontsource/archivo-black": "^5.0.0",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "pagefind": "^1.1.0",
+    "vitest": "^2.0.0",
+    "@types/js-yaml": "^4.0.9"
+  }
+}

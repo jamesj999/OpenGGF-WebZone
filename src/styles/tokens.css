@@ -1,0 +1,19 @@
+@import '@fontsource/bungee/400.css';
+@import '@fontsource/archivo-black/400.css';
+
+:root {
+  --ogf-blue: #1A4FE6;
+  --ogf-red: #E62B33;
+  --ogf-yellow: #FFD81F;
+  --ogf-ink: #0E0E10;
+  --ogf-paper: #f5f6fb;
+  --font-display: 'Bungee', Impact, sans-serif;
+  --font-black: 'Archivo Black', 'Arial Black', sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-family: var(--font-body); color: var(--ogf-ink); }
+body { background: var(--ogf-paper); }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
