@@ -1,7 +1,8 @@
 ---
-// Sonic 1 title card: black bg, "OpenGGF" in white serif (Schola) aligned over a solid
-// lavender blob, with "VER <short>" (where ACT sits) on the blob. No "ZONE". Version is
-// pruned to major.minor; if it can't be parsed, the VER label + number are hidden.
+// Sonic 1 title card: black bg, "OPENGGF" (caps, white Schola serif) over a solid
+// lavender blob, with "VER <short>" on the blob — VER small orange, version big yellow
+// (mirrors the real "ACT 1"). The composition is absolutely centred so the tagline/CTAs
+// below never shift the blob. Version pruned to major.minor (hidden if unparseable).
 import { shortVersion } from '../lib/releases';
 interface Props { version: { label: string; isPre: boolean } | null; }
 const { version } = Astro.props;
@@ -22,42 +23,45 @@ const ver = shortVersion(version);
 
 <style>
   .s1 { position: relative; width: 100%; height: clamp(480px, 84vh, 820px);
-    overflow: hidden; background: #000; isolation: isolate;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: clamp(30px, 7vh, 80px); }
+    overflow: hidden; background: #000; isolation: isolate; }
 
-  /* stage shrinks to the wordmark so the blob can be aligned over its right side */
-  .s1-stage { position: relative; display: inline-block; }
+  /* composition centred independently of the tagline/CTAs below */
+  .s1-stage { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); display: inline-block; }
 
   .s1-name {
-    position: relative; z-index: 2; margin: 0; text-transform: uppercase;
+    position: relative; z-index: 2; margin: 0; text-transform: uppercase; white-space: nowrap;
     font-family: var(--font-s1-text); font-weight: 700; color: #fff;
     font-size: clamp(40px, 8vw, 96px); letter-spacing: 2px; line-height: 1;
     animation: s1-inL .5s ease-out both;
   }
   /* lavender organic blob to the lower-right; the wordmark's right edge just touches it */
   .s1-blob {
-    position: absolute; z-index: 0; right: -6%; top: 66%;
-    width: 38%; aspect-ratio: 1.05;
-    transform: rotate(-12deg);
+    position: absolute; z-index: 0; right: -6%; top: 64%;
+    width: 38%; aspect-ratio: 1.05; transform: rotate(-12deg);
     background: #9a9ae6; border-radius: 62% 38% 56% 44% / 58% 46% 54% 42%;
     animation: s1-pop .45s ease-out .2s both;
   }
-  /* VER + pruned version on the blob, BELOW the wordmark (where ACT sits) */
+  /* VER (small orange) + version (big yellow), side by side on the blob — like "ACT 1" */
   .s1-ver {
-    position: absolute; z-index: 3; right: 0; top: 96%;
-    width: 34%; display: flex; flex-direction: column; align-items: center; line-height: 1;
+    position: absolute; z-index: 3; right: 2%; top: 104%;
+    display: flex; align-items: baseline; gap: 8px;
     animation: s1-inUp .45s ease-out .3s both;
   }
-  .s1-ver span { font-family: var(--font-s1-text); font-weight: 700; color: #fff; font-size: clamp(13px, 1.5vw, 18px); letter-spacing: 2px; }
+  .s1-ver span { font-family: var(--font-s1-text); font-weight: 700; color: #ff8a00;
+    font-size: clamp(15px, 1.7vw, 22px); letter-spacing: 1px; }
   .s1-ver b { font-family: var(--font-s1-text); font-weight: 700; color: var(--ogf-yellow);
-    font-size: clamp(26px, 3.2vw, 44px); -webkit-text-stroke: 1px #0007; }
+    font-size: clamp(30px, 3.6vw, 50px); -webkit-text-stroke: 1px #0007; line-height: 1; }
 
   .s1-tagline {
+    position: absolute; left: 0; right: 0; top: 74%; z-index: 4; text-align: center;
     font-family: var(--font-black); font-style: italic; font-size: clamp(18px, 3vw, 34px);
-    color: #fff; -webkit-text-stroke: 2px var(--ogf-ink); paint-order: stroke fill; text-align: center;
+    color: #fff; -webkit-text-stroke: 2px var(--ogf-ink); paint-order: stroke fill;
     animation: s1-inR .5s ease-out .34s both;
   }
-  .s1-ctas { display: flex; gap: 16px; justify-content: center; animation: s1-inUp .5s ease-out .44s both; }
+  .s1-ctas {
+    position: absolute; left: 0; right: 0; top: 85%; z-index: 4;
+    display: flex; gap: 16px; justify-content: center; animation: s1-inUp .5s ease-out .44s both;
+  }
   .s1-btn { font: 900 clamp(15px,1.8vw,20px) var(--font-body); padding: 15px 30px;
     border: 4px solid #fff; border-radius: 8px; text-decoration: none; box-shadow: 4px 4px 0 rgba(0,0,0,.5); }
   .s1-btn.p { background: var(--ogf-yellow); color: var(--ogf-ink); border-color: var(--ogf-ink); }

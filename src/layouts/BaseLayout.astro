@@ -12,6 +12,15 @@ const { title, description = 'OpenGGF — open-source, OpenGL-accelerated, accur
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{title}</title>
   <meta name="description" content={description} />
+  <script is:inline>
+    // Pick the random title-card variant BEFORE first paint (no flash), and flag whether
+    // motion is allowed so the S2 hero can stay hidden until its animation initialises.
+    (function () {
+      var d = document.documentElement;
+      d.setAttribute('data-titlecard', ['s1', 's2', 's3k'][Math.floor(Math.random() * 3)]);
+      try { if (!matchMedia('(prefers-reduced-motion: reduce)').matches) d.classList.add('tc-animate'); } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <NavBar />

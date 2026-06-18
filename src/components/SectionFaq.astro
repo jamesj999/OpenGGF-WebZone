@@ -13,7 +13,7 @@ const { items } = Astro.props;
   ))}
 </section>
 <style>
-  .sec { padding: 48px 20px; max-width: 800px; margin: 0 auto; background: #fff; }
+  .sec { padding: clamp(40px, 7vh, 64px) 24px; max-width: 900px; margin: 0 auto; }
   .faq { border-bottom: 2px solid #eef0f7; padding: 12px 0; }
   .faq summary { font: 800 14px var(--font-body); cursor: pointer; list-style: none; }
   .faq summary::after { content: ' ＋'; color: var(--ogf-blue); }

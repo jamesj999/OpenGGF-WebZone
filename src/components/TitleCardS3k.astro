@@ -45,14 +45,18 @@ const ver = shortVersion(version);
   .s3k-text { display: flex; flex-direction: column; align-items: flex-start; }
   .s3k-name {
     font-family: var(--font-s3k-text); color: #e9e9f2; font-size: clamp(44px, 8vw, 116px);
-    line-height: .95; letter-spacing: 2px; text-shadow: 6px 7px 0 #4a4a55;
+    line-height: .95; letter-spacing: 2px; padding: 0 .06em;
+    /* grey block behind the bottom half of the text (as in the real S3&K card; no shadow) */
+    background: linear-gradient(to bottom, transparent 0 52%, #5b5b68 52% 100%);
     animation: s3k-inR .55s ease-out .12s both;
   }
   .s3k-ver {
-    font-family: var(--font-s3k-text); color: #fff; font-size: clamp(18px, 2.2vw, 30px); margin-top: .1em;
-    animation: s3k-inR .55s ease-out .24s both;
+    display: inline-flex; align-items: baseline; gap: 8px; margin-top: .14em;
+    font-family: var(--font-s3k-text); animation: s3k-inR .55s ease-out .24s both;
   }
-  .s3k-ver b { color: var(--ogf-yellow); -webkit-text-stroke: 1px #0006; }
+  .s3k-ver span { color: #fff; font-size: clamp(16px, 1.9vw, 26px); letter-spacing: 1px; }
+  .s3k-ver b { color: var(--ogf-yellow); font-size: clamp(30px, 3.6vw, 50px);
+    -webkit-text-stroke: 1px #0006; line-height: 1; }
 
   .s3k-tagline {
     font-family: var(--font-black); font-style: italic; font-size: clamp(17px, 2.6vw, 32px);

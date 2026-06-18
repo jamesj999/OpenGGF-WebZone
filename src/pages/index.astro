@@ -2,6 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import RandomTitleCard from '../components/RandomTitleCard.astro';
 import ZigzagDivider from '../components/ZigzagDivider.astro';
+import SectionAbout from '../components/SectionAbout.astro';
 import SectionDownload from '../components/SectionDownload.astro';
 import SectionReleases from '../components/SectionReleases.astro';
 import SectionNews from '../components/SectionNews.astro';
@@ -26,6 +27,7 @@ const faqItems = faq as { q: string; a: string }[];
 <BaseLayout title="OpenGGF — Open-Source Sonic Engine">
   <RandomTitleCard version={version} />
   <ZigzagDivider />
+  <SectionAbout />
   <SectionDownload matches={matches} hasData={hasData} />
   <SectionReleases releases={releases} />
   <SectionNews posts={posts} />

@@ -31,8 +31,10 @@ export function initAnimations(): void {
       .from(q('[data-tc="ctas"]'),   { xPercent: 160, opacity: 0, duration: f(20) }, f(12))
       .from(q('[data-tc="red"]'),    { xPercent: -170, duration: f(8) }, f(21))
       .from(q('[data-tc="zone"]'),   { x: () => W(), opacity: 0, duration: f(18) }, f(27))
-      .from(q('[data-tc="bar"]'),    { x: () => -W() * 0.5, opacity: 0, duration: f(18) }, f(28))
-      .from(q('[data-tc="act"]'),    { x: () => -W() * 0.4, opacity: 0, duration: f(18) }, f(28));
+      .from(q('[data-tc="bar"]'),    { x: () => -W() * 0.5, opacity: 0, duration: f(18) }, f(28));
+    // GSAP has set the start state (immediateRender) — now reveal (it was hidden to
+    // avoid a rest-state flash on load).
+    s2.style.visibility = 'visible';
   }
 
   gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => {

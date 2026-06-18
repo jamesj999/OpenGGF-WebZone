@@ -9,13 +9,6 @@ import TitleCardS3k from './TitleCardS3k.astro';
 interface Props { version: { label: string; isPre: boolean } | null; }
 const { version } = Astro.props;
 ---
-<script is:inline>
-  // Pick before the variants below are parsed/painted → no flash.
-  document.documentElement.setAttribute(
-    'data-titlecard',
-    ['s1', 's2', 's3k'][Math.floor(Math.random() * 3)]
-  );
-</script>
 <div class="rtc">
   <div class="rtc-v" data-variant="s1"><TitleCardS1 version={version} /></div>
   <div class="rtc-v" data-variant="s2"><TitleCardHero version={version} /></div>
@@ -23,9 +16,12 @@ const { version } = Astro.props;
 </div>
 <style is:global>
   .rtc-v { display: none; }
-  /* default to S2 before the script sets the attribute (SSR / no-JS fallback) */
+  /* the head script sets data-titlecard before paint; default to S2 (SSR / no-JS) */
   html:not([data-titlecard]) .rtc-v[data-variant="s2"],
   html[data-titlecard="s1"]  .rtc-v[data-variant="s1"],
   html[data-titlecard="s2"]  .rtc-v[data-variant="s2"],
   html[data-titlecard="s3k"] .rtc-v[data-variant="s3k"] { display: block; }
+  /* hide the S2 hero until GSAP initialises (avoids a rest-state flash on load);
+     only when motion is allowed — reduced-motion shows it immediately, unanimated */
+  html.tc-animate [data-hero="s2"] { visibility: hidden; }
 </style>
