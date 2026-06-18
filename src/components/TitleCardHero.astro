@@ -92,7 +92,8 @@ const { version, videoSrc, posterSrc = '/media/hero-poster.svg' } = Astro.props;
   .tc-zone {
     position: absolute; left: max(27%, 360px); top: 16%; z-index: 5; margin: 0;
     width: clamp(280px, 44vw, 600px);
-    filter: drop-shadow(4px 5px 0 rgba(14, 14, 16, 0.3));
+    /* white wordmark with a hard straight-down black shadow (matches the teeth) */
+    filter: drop-shadow(0 8px 0 var(--ogf-ink));
   }
   /* tagline moved up into the blue, under the wordmark (where ZONE used to be) */
   .tc-tagline {

@@ -1,25 +1,14 @@
 ---
-// OpenGGF wordmark (Sonic 2 title-card style) recreated from the Jacked font — the
-// actual S2 title-card font — with the layered look: black border (widest stroke) →
-// gold outline → blue two-tone gradient fill. Pure SVG: crisp + smooth, tiny payload.
+// OpenGGF wordmark (Sonic 2 title card) — plain WHITE text in the Jacked font (the
+// real S2 title-card font). The straight-down black shadow is applied by the consumer
+// (.tc-zone filter), matching the zig-zag teeth shadow direction.
 // (Jacked is registered in tokens.css; Lilita One is a rounded fallback.)
 import '@fontsource/lilita-one';
 ---
-<svg class="ggf" viewBox="0 0 640 170" role="img" aria-label="OpenGGF" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="ggf-fill" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#8aa0f3" />
-      <stop offset="46%" stop-color="#3a5ad9" />
-      <stop offset="47%" stop-color="#20309f" />
-      <stop offset="100%" stop-color="#182a86" />
-    </linearGradient>
-  </defs>
-  <g font-family="'Jacked', 'Lilita One', system-ui, sans-serif" font-size="128"
-     text-anchor="middle" stroke-linejoin="round" paint-order="stroke">
-    <text x="320" y="124" fill="none" stroke="#0E0E10" stroke-width="21">OpenGGF</text>
-    <text x="320" y="124" fill="none" stroke="#FFD81F" stroke-width="11">OpenGGF</text>
-    <text x="320" y="124" fill="url(#ggf-fill)">OpenGGF</text>
-  </g>
+<svg class="ggf" viewBox="0 0 640 160" role="img" aria-label="OpenGGF" xmlns="http://www.w3.org/2000/svg">
+  <text x="320" y="124" fill="#fff"
+        font-family="'Jacked', 'Lilita One', system-ui, sans-serif" font-size="128"
+        text-anchor="middle">OpenGGF</text>
 </svg>
 <style>
   .ggf { display: block; width: 100%; height: auto; overflow: visible; }
