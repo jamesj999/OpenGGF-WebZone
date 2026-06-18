@@ -1,0 +1,16 @@
+---
+interface Props { headings: { depth: number; slug: string; text: string }[]; }
+const { headings } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+{items.length > 0 && (
+  <nav class="toc">
+    <p class="t">On this page</p>
+    {items.map((h) => <a href={`#${h.slug}`} style={`padding-left:${(h.depth - 2) * 10}px`}>{h.text}</a>)}
+  </nav>
+)}
+<style>
+  .toc { font: 600 12px var(--font-body); }
+  .t { color: var(--ogf-blue); font-weight: 900; text-transform: uppercase; font-size: 10px; margin-bottom: 8px; }
+  .toc a { display: block; padding: 3px 0; color: #888; text-decoration: none; }
+</style>

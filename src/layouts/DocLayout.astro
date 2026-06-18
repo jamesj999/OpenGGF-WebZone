@@ -1,0 +1,38 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import DocsSidebar from '../components/DocsSidebar.astro';
+import DocsTOC from '../components/DocsTOC.astro';
+interface Props {
+  title: string; group: string; current: string;
+  groups: { name: string; items: { title: string; slug: string }[] }[];
+  headings: { depth: number; slug: string; text: string }[];
+}
+const { title, group, current, groups, headings } = Astro.props;
+---
+<BaseLayout title={`${title} — OpenGGF Docs`}>
+  <div class="layout">
+    <aside class="l"><DocsSidebar groups={groups} current={current} /></aside>
+    <article class="m">
+      <p class="crumb">Docs › {group}</p>
+      <h2 class="tag">{group}</h2>
+      <h1>{title}</h1>
+      <div class="prose"><slot /></div>
+    </article>
+    <aside class="r"><DocsTOC headings={headings} /></aside>
+  </div>
+</BaseLayout>
+<style>
+  .layout { display: grid; grid-template-columns: 220px 1fr 180px; max-width: 1200px; margin: 0 auto; min-height: 70vh; }
+  .l { border-right: 2px solid #ececf3; background: var(--ogf-paper); }
+  .r { border-left: 2px solid #ececf3; padding: 22px 14px; }
+  .m { padding: 28px 32px; }
+  .crumb { font: 700 11px var(--font-body); color: #999; }
+  .tag { display: inline-block; background: var(--ogf-ink); color: #fff; font: 900 11px var(--font-body);
+    padding: 5px 12px; transform: skewX(-7deg); margin: 8px 0; }
+  .m h1 { font-family: var(--font-display); font-size: 30px; margin-bottom: 14px; }
+  .prose :global(h2) { font-family: var(--font-display); font-size: 20px; margin: 22px 0 10px; }
+  .prose :global(pre) { background: var(--ogf-ink); color: #d6e0ff; padding: 14px; border-radius: 8px;
+    border-left: 5px solid var(--ogf-yellow); overflow-x: auto; margin: 12px 0; }
+  .prose :global(p) { font: 400 14px/1.7 var(--font-body); color: #444; margin: 10px 0; }
+  @media (max-width: 880px) { .layout { grid-template-columns: 1fr; } .l, .r { border: none; } }
+</style>

@@ -1,0 +1,26 @@
+---
+interface Props { groups: { name: string; items: { title: string; slug: string }[] }[]; current: string; }
+const { groups, current } = Astro.props;
+---
+<nav class="side">
+  {groups.map((g) => (
+    <div class="grp-block">
+      <p class="grp">{g.name}</p>
+      <ul>
+        {g.items.map((it) => (
+          <li><a href={`/docs/${it.slug}`} aria-current={it.slug === current ? 'page' : undefined}
+            class={it.slug === current ? 'on' : ''}>{it.title}</a></li>
+        ))}
+      </ul>
+    </div>
+  ))}
+</nav>
+<style>
+  .side { padding: 16px 10px; }
+  .grp { font: 900 10px var(--font-body); text-transform: uppercase; letter-spacing: 1px;
+    color: var(--ogf-blue); margin: 14px 6px 6px; }
+  .side ul { list-style: none; }
+  .side a { display: block; padding: 5px 10px; border-radius: 5px; color: #333;
+    font: 600 13px var(--font-body); text-decoration: none; }
+  .side a.on { background: var(--ogf-blue); color: #fff; font-weight: 800; }
+</style>

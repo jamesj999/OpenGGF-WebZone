@@ -1,0 +1,24 @@
+---
+import DocLayout from '../../layouts/DocLayout.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const docs = await getCollection('docs');
+  const order = ['Players', 'Contributors', 'Cross-referencing', 'Reference'];
+  const map = new Map<string, { title: string; slug: string }[]>();
+  for (const d of [...docs].sort((a, b) => a.data.order - b.data.order)) {
+    const g = d.data.group;
+    if (!map.has(g)) map.set(g, []);
+    map.get(g)!.push({ title: d.data.title, slug: d.slug });
+  }
+  const groups = order.filter((g) => map.has(g)).map((name) => ({ name, items: map.get(name)! }));
+  return docs.map((d) => ({ params: { slug: d.slug }, props: { doc: d, groups } }));
+}
+
+const { doc, groups } = Astro.props;
+const { Content, headings } = await doc.render();
+---
+<DocLayout title={doc.data.title} group={doc.data.group} current={doc.slug}
+  groups={groups} headings={headings}>
+  <Content />
+</DocLayout>
