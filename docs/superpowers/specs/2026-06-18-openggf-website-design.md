@@ -58,10 +58,22 @@ via a bare deploy hook (a deploy hook would rebuild but never refresh the commit
      repository_dispatch: { types: [engine-release] }
      workflow_dispatch: {}
      schedule: [{ cron: '0 6 * * *' }]   # daily backstop in case a dispatch is missed
+   permissions:
+     contents: write                     # REQUIRED so the job can push the cache commit;
+                                         # org/repo default may be read-only otherwise
    ```
    The job runs `npm run refresh-cache` (writes `src/data/releases.cache.json` from the Releases
-   API using `GITHUB_TOKEN`), then commits with `[skip ci]`-safe logic and pushes to `main` only
-   if the file changed.
+   API using the workflow `GITHUB_TOKEN`), then commits and pushes to `main` **only if the file
+   changed**.
+   - **The commit message MUST NOT contain any CI-skip directive** (`[skip ci]`, `[ci skip]`,
+     `[skip pages]`, etc.). This push is precisely what must trigger the Pages production build —
+     suppressing it would update the cache but never rebuild the site, silently breaking the
+     "latest" path. Use a plain message such as `chore: refresh releases cache`.
+   - **Loop prevention** (this push could otherwise re-trigger workflows) is handled **not** by
+     skip directives but by scoping: this workflow only triggers on `repository_dispatch` /
+     `workflow_dispatch` / `schedule` (never `on: push`), so its own commit cannot re-invoke it.
+     If a `push`-triggered workflow is ever added, exclude `src/data/releases.cache.json` via a
+     `paths-ignore` filter and/or guard on the committing actor.
 
 3. **Pages build** — reads the now-updated committed cache (read-only). It may also attempt a live
    API fetch as the primary source, with the committed cache as the guaranteed fallback (§7).
