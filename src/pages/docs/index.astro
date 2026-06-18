@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+// Derive each card's link from the synced docs collection (first doc per group by order),
+// so the hub can never ship a hard-coded slug that the sync didn't produce. Groups with no
+// synced docs are dropped rather than rendered as broken links.
+const docs = await getCollection('docs');
+const firstIn = (group: string) =>
+  docs.filter((d) => d.data.group === group).sort((a, b) => a.data.order - b.data.order)[0];
+const defs = [
+  { group: 'Players', title: 'Play', desc: 'Install, configure, and run the engine.', color: 'var(--ogf-red)' },
+  { group: 'Contributors', title: 'Contribute', desc: 'Dev setup, architecture, adding zones & bosses.', color: 'var(--ogf-blue)' },
+  { group: 'Cross-referencing', title: 'Cross-reference', desc: 'Map the engine against the disassemblies.', color: 'var(--ogf-ink)' },
+];
+const cards = defs
+  .map((d) => ({ ...d, doc: firstIn(d.group) }))
+  .filter((d) => d.doc)
+  .map((d) => ({ ...d, href: `/docs/${d.doc!.slug}` }));
+---
+<BaseLayout title="Docs — OpenGGF">
+  <section class="hub">
+    <h1>Documentation</h1>
+    <div class="cards">
+      {cards.map((c) => (
+        <a class="card" href={c.href} style={`--c:${c.color}`}>
+          <h2>{c.title}</h2><p>{c.desc}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>
+<style>
+  .hub { max-width: 1000px; margin: 0 auto; padding: 48px 20px; }
+  .hub h1 { font-family: var(--font-display); font-size: 34px; margin-bottom: 20px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 16px; }
+  .card { display: block; background: var(--c); color: #fff; border: 4px solid var(--ogf-ink);
+    border-radius: 10px; padding: 22px; text-decoration: none; transform: skewY(-1deg); }
+  .card h2 { font-family: var(--font-display); font-size: 22px; }
+  .card p { font: 600 13px/1.5 var(--font-body); margin-top: 8px; opacity: .92; }
+</style>
