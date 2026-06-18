@@ -701,6 +701,13 @@ describe('TitleCardHero', () => {
     const html = await c.renderToString(Hero, { props: { version: null } });
     expect(html).not.toContain('class="plate"');
   });
+  it('renders the video WITHOUT autoplay (poster shows until JS opts in)', async () => {
+    const c = await AstroContainer.create();
+    const html = await c.renderToString(Hero, { props: { version: null, videoSrc: '/media/hero.mp4' } });
+    expect(html).toContain('hero-video');
+    expect(html).toContain('poster=');
+    expect(html).not.toContain('autoplay');   // reduced-motion users get the poster
+  });
 });
 ```
 
@@ -728,7 +735,7 @@ const { version, videoSrc, posterSrc = '/media/hero-poster.svg' } = Astro.props;
   <ZigzagBand side="right" color="var(--ogf-yellow)" />
   <div class="video" aria-hidden="true">
     {videoSrc
-      ? <video autoplay muted loop playsinline poster={posterSrc}><source src={videoSrc} type="video/mp4" /></video>
+      ? <video class="hero-video" muted loop playsinline preload="none" poster={posterSrc}><source src={videoSrc} type="video/mp4" /></video>
       : <img src={posterSrc} alt="" />}
   </div>
   {version && (
@@ -832,8 +839,13 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { prefersReducedMotion } from '../lib/motion';
 
 export function initAnimations(): void {
-  if (prefersReducedMotion()) return; // static render; nothing to do
+  if (prefersReducedMotion()) return; // static render; hero video stays paused → poster shows
   gsap.registerPlugin(ScrollTrigger);
+
+  // Motion allowed: opt the hero video into playback (markup omits `autoplay` so that
+  // reduced-motion users never see it move — they keep the poster image).
+  const heroVideo = document.querySelector<HTMLVideoElement>('.hero-video');
+  if (heroVideo) { heroVideo.autoplay = true; heroVideo.play().catch(() => {}); }
 
   const hero = document.querySelector('[data-hero]');
   if (hero) {
@@ -1382,7 +1394,7 @@ See [controls](./controls.md).
 ```ts
 import { describe, it, expect, beforeEach } from 'vitest';
 import { execFileSync } from 'node:child_process';
-import { rmSync, existsSync, readFileSync, mkdtempSync } from 'node:fs';
+import { rmSync, existsSync, readFileSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -1409,6 +1421,15 @@ describe('sync-docs', () => {
     expect(code).not.toBe(0);
     expect(msg).toContain('engine repo not found');
   });
+
+  it('prunes stale output that is no longer in the source', () => {
+    // Seed a stale file that the fixture does NOT produce.
+    mkdirSync('src/content/docs/guide/old', { recursive: true });
+    writeFileSync('src/content/docs/guide/old/removed.md', '---\ntitle: "Old"\n---\nstale');
+    execFileSync('node', ['scripts/sync-docs.mjs', '--engine-path', FIX], { stdio: 'inherit' });
+    expect(existsSync('src/content/docs/guide/old/removed.md')).toBe(false);   // pruned
+    expect(existsSync('src/content/docs/guide/playing/getting-started.md')).toBe(true); // re-synced
+  });
 });
 ```
 
@@ -1420,8 +1441,8 @@ Expected: FAIL — script missing.
 - [ ] **Step 4: Create `scripts/sync-docs.mjs`**
 
 ```js
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
-import { join, dirname, relative, resolve } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, statSync, rmSync } from 'node:fs';
+import { join, dirname, resolve } from 'node:path';
 
 function arg(name) { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : undefined; }
 const enginePath = resolve(arg('--engine-path') || process.env.OPENGGF_ENGINE_PATH || '../sonic-engine');
@@ -1488,7 +1509,11 @@ function walk(absDir, relDir) {
   }
 }
 
-let count = 0;
+// Prune stale output: regenerate the vendored docs from scratch each run so deleted,
+// renamed, or newly-excluded files never linger in the published site.
+rmSync(OUT, { recursive: true, force: true });
+mkdirSync(OUT, { recursive: true });
+
 for (const d of ALLOW_DIRS) { const abs = join(enginePath, d); if (existsSync(abs)) { walk(abs, d); } }
 for (const f of ALLOW_FILES) {
   const abs = join(enginePath, f);
@@ -1738,11 +1763,22 @@ Expected: FAIL — page missing.
 ```astro
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-const cards = [
-  { href: '/docs/guide/playing/getting-started', title: 'Play', desc: 'Install, configure, and run the engine.', color: 'var(--ogf-red)' },
-  { href: '/docs/guide/contributing/dev-setup', title: 'Contribute', desc: 'Dev setup, architecture, adding zones & bosses.', color: 'var(--ogf-blue)' },
-  { href: '/docs/guide/cross-referencing/68000-primer', title: 'Cross-reference', desc: 'Map the engine against the disassemblies.', color: 'var(--ogf-ink)' },
+import { getCollection } from 'astro:content';
+// Derive each card's link from the synced docs collection (first doc per group by order),
+// so the hub can never ship a hard-coded slug that the sync didn't produce. Groups with no
+// synced docs are dropped rather than rendered as broken links.
+const docs = await getCollection('docs');
+const firstIn = (group: string) =>
+  docs.filter((d) => d.data.group === group).sort((a, b) => a.data.order - b.data.order)[0];
+const defs = [
+  { group: 'Players', title: 'Play', desc: 'Install, configure, and run the engine.', color: 'var(--ogf-red)' },
+  { group: 'Contributors', title: 'Contribute', desc: 'Dev setup, architecture, adding zones & bosses.', color: 'var(--ogf-blue)' },
+  { group: 'Cross-referencing', title: 'Cross-reference', desc: 'Map the engine against the disassemblies.', color: 'var(--ogf-ink)' },
 ];
+const cards = defs
+  .map((d) => ({ ...d, doc: firstIn(d.group) }))
+  .filter((d) => d.doc)
+  .map((d) => ({ ...d, href: `/docs/${d.doc!.slug}` }));
 ---
 <BaseLayout title="Docs — OpenGGF">
   <section class="hub">
@@ -1811,6 +1847,10 @@ describe('pagefind', () => {
 Run: `npx vitest run test/search.test.ts`
 Expected: FAIL until the build script chains pagefind (it already does from T1) AND there is indexable content (there is, from docs). If pagefind isn't installed yet, `npm i` first.
 
+> **Build-resolution check:** this test runs the *full* `npm run build` (i.e. `astro build` first).
+> If the `/pagefind/pagefind-ui.js` dynamic import lacks `/* @vite-ignore */`, `astro build` fails
+> trying to resolve a file that doesn't exist yet — so this test also guards the @vite-ignore fix.
+
 - [ ] **Step 3: Create `src/scripts/search.ts`** (lazy-load Pagefind UI on first focus/click)
 
 ```ts
@@ -1820,8 +1860,10 @@ let loaded = false;
 async function openSearch() {
   if (loaded) { document.querySelector<HTMLInputElement>('.pagefind-ui__search-input')?.focus(); return; }
   loaded = true;
-  // @ts-expect-error - emitted at build time, not present during typecheck
-  const { PagefindUI } = await import('/pagefind/pagefind-ui.js');
+  // @ts-expect-error - emitted at build time, not present during typecheck.
+  // @vite-ignore prevents Astro/Vite from trying to resolve this path at build
+  // time (the file only exists after `pagefind --site dist` runs post-build).
+  const { PagefindUI } = await import(/* @vite-ignore */ '/pagefind/pagefind-ui.js');
   const host = document.getElementById('search-modal')!;
   host.hidden = false;
   new PagefindUI({ element: '#search-modal .inner', showSubResults: true });
@@ -1980,10 +2022,11 @@ jobs:
             -d '{"event_type":"engine-release"}'
 ```
 
-`WEBZONE_DISPATCH_PAT` is a fine-grained PAT with `contents: read` + `metadata` and the
-`repository_dispatch` (Contents/Actions) permission on `openggf-webzone`. The webzone
-`refresh-on-release.yml` then refreshes the cache, commits, and pushes — which triggers the
-Pages build.
+`WEBZONE_DISPATCH_PAT` is a fine-grained PAT scoped to `openggf-webzone` with
+**Contents: write** and **Metadata: read**. GitHub's "Create a repository dispatch event"
+REST endpoint requires *Contents: write* for fine-grained tokens — `contents: read` is not
+sufficient and the dispatch call will 403. The webzone `refresh-on-release.yml` then refreshes
+the cache, commits, and pushes — which triggers the Pages build.
 ````
 
 - [ ] **Step 5: Run to verify pass**
@@ -2016,3 +2059,11 @@ git commit -m "ci: cache-refresh workflow + deployment runbook"
 - §8 Components isolation → one component per file across T2–T12 ✔
 - §9 A11y/perf (reduced-motion, semantic headings, keyboard nav, woff2/swap) → T1 tokens, T6 motion gate, T3/T8 semantics ✔
 - §10 Open items (video placeholder T5; DNS + webzone repo + webhook wiring → DEPLOYMENT.md T14) ✔
+
+### Review-round fixes (post-plan)
+
+- **Pagefind dynamic import** (T13): `await import(/* @vite-ignore */ '/pagefind/pagefind-ui.js')` so `astro build` doesn't try to resolve a post-build file; the full-build test guards it.
+- **Stale doc pruning** (T10): `sync-docs.mjs` wipes `src/content/docs` before each run; a test seeds a stale file and asserts it's pruned.
+- **Dispatch PAT** (T14 DEPLOYMENT.md): fine-grained PAT needs **Contents: write** (GitHub requirement for repository_dispatch), not `contents: read`.
+- **Reduced-motion video** (T5/T6): markup omits `autoplay` (poster shows by default); the motion-gated `initAnimations` opts the video into playback only when motion is allowed. Test asserts no `autoplay` in markup.
+- **Docs hub links** (T12): card hrefs derived from the docs collection (first doc per group), empty groups dropped; the build test still asserts the three group titles render after a real sync.
