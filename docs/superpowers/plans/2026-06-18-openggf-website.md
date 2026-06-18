@@ -1008,15 +1008,17 @@ const fmt = (d: string) => (d ? new Date(d).toISOString().slice(0, 7) : '');
 <section id="releases" class="sec" data-reveal>
   <ActPlateHeader label="Releases" />
   {releases.length ? (
-    <ul class="list">
-      {releases.slice(0, 6).map((r) => (
-        <li class="rel">
-          <a class="tag" href={r.url}>{r.tag}{r.prerelease ? ' (pre)' : ''}</a>
-          <span class="date">{fmt(r.publishedAt)}</span>
-        </li>
-      ))}
-    </ul>
-    <a class="all" href={RELEASES}>All releases →</a>
+    <>
+      <ul class="list">
+        {releases.slice(0, 6).map((r) => (
+          <li class="rel">
+            <a class="tag" href={r.url}>{r.tag}{r.prerelease ? ' (pre)' : ''}</a>
+            <span class="date">{fmt(r.publishedAt)}</span>
+          </li>
+        ))}
+      </ul>
+      <a class="all" href={RELEASES}>All releases →</a>
+    </>
   ) : (
     <a class="linkout" href={RELEASES}>View all releases on GitHub →</a>
   )}
@@ -1311,7 +1313,9 @@ import { getCollection } from 'astro:content';
 import cache from '../data/releases.cache.json';
 import faq from '../data/faq.yaml';
 
-const SITE_FALLBACK_VERSION = 'v0.5';
+// Build-time-injected per the spec (set SITE_FALLBACK_VERSION in the Pages env / .env);
+// the literal 'v0.5' is the documented default for local/dev builds only.
+const SITE_FALLBACK_VERSION = import.meta.env.SITE_FALLBACK_VERSION ?? 'v0.5';
 const { releases, source } = await getReleaseData({ token: import.meta.env.GITHUB_TOKEN, cache: cache as Release[] });
 const hasData = source !== 'none';
 const version = selectHeroVersion(releases, SITE_FALLBACK_VERSION);
@@ -1367,7 +1371,7 @@ git commit -m "feat: assemble homepage (hero + download/releases/news/faq)"
 - Create: `test/scripts/fixtures/engine/` (fixture mini-repo) + `test/scripts/sync-docs.test.ts`
 
 **Interfaces:**
-- Produces: CLI `node scripts/sync-docs.mjs [--engine-path <dir>]`; copies the allowlist into `src/content/docs/`, normalizes frontmatter (`title`, `group`, `order`), rewrites relative `.md` links to site `/docs/...` paths. Exit non-zero with the spec's message when the path is invalid.
+- Produces: CLI `node scripts/sync-docs.mjs [--engine-path <dir>] [--out-dir <dir>]`; copies the allowlist into the out dir (default `src/content/docs/`), normalizes frontmatter (`title`, `group`, `order`), rewrites relative `.md` links to site `/docs/...` paths. Exit non-zero with the spec's message when the path is invalid. (`--out-dir` exists so tests run against a temp dir and never dirty the tracked vendored docs.)
 
 - [ ] **Step 1: Create fixtures** under `test/scripts/fixtures/engine/`
 
@@ -1392,20 +1396,22 @@ See [controls](./controls.md).
 - [ ] **Step 2: Write failing tests** in `test/scripts/sync-docs.test.ts`
 
 ```ts
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { rmSync, existsSync, readFileSync, mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const FIX = join(process.cwd(), 'test/scripts/fixtures/engine');
+let OUT: string;   // temp output dir per test — never the tracked src/content/docs
 
 describe('sync-docs', () => {
-  beforeEach(() => { rmSync('src/content/docs', { recursive: true, force: true }); });
+  beforeEach(() => { OUT = mkdtempSync(join(tmpdir(), 'docs-out-')); });
+  afterEach(() => { rmSync(OUT, { recursive: true, force: true }); });
 
   it('copies allowlisted guide docs and adds frontmatter', () => {
-    execFileSync('node', ['scripts/sync-docs.mjs', '--engine-path', FIX], { stdio: 'inherit' });
-    const out = 'src/content/docs/guide/playing/getting-started.md';
+    execFileSync('node', ['scripts/sync-docs.mjs', '--engine-path', FIX, '--out-dir', OUT], { stdio: 'inherit' });
+    const out = join(OUT, 'guide/playing/getting-started.md');
     expect(existsSync(out)).toBe(true);
     const txt = readFileSync(out, 'utf8');
     expect(txt).toMatch(/^---/);              // frontmatter added
@@ -1416,7 +1422,7 @@ describe('sync-docs', () => {
   it('exits non-zero with a clear message when path is invalid', () => {
     const bad = mkdtempSync(join(tmpdir(), 'empty-'));
     let code = 0, msg = '';
-    try { execFileSync('node', ['scripts/sync-docs.mjs', '--engine-path', bad], { encoding: 'utf8' }); }
+    try { execFileSync('node', ['scripts/sync-docs.mjs', '--engine-path', bad, '--out-dir', OUT], { encoding: 'utf8' }); }
     catch (e: any) { code = e.status; msg = (e.stderr || '') + (e.stdout || ''); }
     expect(code).not.toBe(0);
     expect(msg).toContain('engine repo not found');
@@ -1424,11 +1430,11 @@ describe('sync-docs', () => {
 
   it('prunes stale output that is no longer in the source', () => {
     // Seed a stale file that the fixture does NOT produce.
-    mkdirSync('src/content/docs/guide/old', { recursive: true });
-    writeFileSync('src/content/docs/guide/old/removed.md', '---\ntitle: "Old"\n---\nstale');
-    execFileSync('node', ['scripts/sync-docs.mjs', '--engine-path', FIX], { stdio: 'inherit' });
-    expect(existsSync('src/content/docs/guide/old/removed.md')).toBe(false);   // pruned
-    expect(existsSync('src/content/docs/guide/playing/getting-started.md')).toBe(true); // re-synced
+    mkdirSync(join(OUT, 'guide/old'), { recursive: true });
+    writeFileSync(join(OUT, 'guide/old/removed.md'), '---\ntitle: "Old"\n---\nstale');
+    execFileSync('node', ['scripts/sync-docs.mjs', '--engine-path', FIX, '--out-dir', OUT], { stdio: 'inherit' });
+    expect(existsSync(join(OUT, 'guide/old/removed.md'))).toBe(false);   // pruned
+    expect(existsSync(join(OUT, 'guide/playing/getting-started.md'))).toBe(true); // re-synced
   });
 });
 ```
@@ -1446,7 +1452,7 @@ import { join, dirname, resolve } from 'node:path';
 
 function arg(name) { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : undefined; }
 const enginePath = resolve(arg('--engine-path') || process.env.OPENGGF_ENGINE_PATH || '../sonic-engine');
-const OUT = resolve('src/content/docs');
+const OUT = resolve(arg('--out-dir') || 'src/content/docs');   // overridable so tests never touch the tracked dir
 
 // Validation: directory must exist and look like the engine (has docs/guide/).
 if (!existsSync(enginePath) || !existsSync(join(enginePath, 'docs/guide'))) {
@@ -1870,7 +1876,11 @@ async function openSearch() {
   host.querySelector<HTMLInputElement>('.pagefind-ui__search-input')?.focus();
 }
 export function initSearch() {
-  document.getElementById('nav-search')?.addEventListener('click', openSearch);
+  const btn = document.getElementById('nav-search');
+  btn?.addEventListener('click', openSearch);
+  // First keyboard focus (tabbing to the button) also loads search — matches the
+  // spec's "loads on first focus". One-shot; openSearch is idempotent via `loaded`.
+  btn?.addEventListener('focus', openSearch, { once: true });
   document.getElementById('search-close')?.addEventListener('click', () => {
     document.getElementById('search-modal')!.hidden = true;
   });
@@ -2067,3 +2077,10 @@ git commit -m "ci: cache-refresh workflow + deployment runbook"
 - **Dispatch PAT** (T14 DEPLOYMENT.md): fine-grained PAT needs **Contents: write** (GitHub requirement for repository_dispatch), not `contents: read`.
 - **Reduced-motion video** (T5/T6): markup omits `autoplay` (poster shows by default); the motion-gated `initAnimations` opts the video into playback only when motion is allowed. Test asserts no `autoplay` in markup.
 - **Docs hub links** (T12): card hrefs derived from the docs collection (first doc per group), empty groups dropped; the build test still asserts the three group titles render after a real sync.
+
+### Review-round 2 fixes
+
+- **sync-docs test isolation** (T10): added `--out-dir`; all three sync tests run against a per-test temp dir (never the tracked `src/content/docs`), so the full-suite sweep can't race fixture docs against the homepage/docs/Pagefind build tests.
+- **SectionReleases adjacent siblings** (T7): wrapped the truthy ternary branch (`<ul>` + `<a>`) in a `<>…</>` fragment — would otherwise be a build/parse failure.
+- **SITE_FALLBACK_VERSION** (T9): now `import.meta.env.SITE_FALLBACK_VERSION ?? 'v0.5'` (build-time injected per spec; literal is the documented dev default).
+- **Pagefind first-focus** (T13): `#nav-search` gets a one-shot `focus` listener in addition to `click`, matching the spec's "loads on first focus"; `openSearch` is idempotent via the `loaded` flag.
