@@ -1,1 +1,130 @@
-[]
+[
+  {
+    "tag": "v0.5.20260411",
+    "name": "v0.5.20260411",
+    "url": "https://github.com/jamesj999/OpenGGF/releases/tag/v0.5.20260411",
+    "prerelease": false,
+    "publishedAt": "2026-04-11T19:00:42Z",
+    "body": "A primarily architectural release focused on shared-system hardening, safer runtime ownership, and a major expansion of Sonic 3 & Knuckles gameplay coverage.\n\n- **Two-tier service architecture** landed across the object system: `GameServices` and `ObjectServices` now replace pervasive singleton access, with broad NoOp/null-check cleanup and cleaner per-object service boundaries.\n- **GameRuntime** now owns mutable gameplay state explicitly, backed by `resetState()` lifecycle support across the singleton-heavy engine. This improves test isolation, teardown safety, and future editor/play-test workflows.\n- **LevelManager decomposition** split one of the engine's largest subsystems into focused components, and **MutableLevel** landed as the foundation for future in-engine level editing, undo/redo, and dirty-region updates.\n- **Common code extraction and cross-game hardening** removed a large amount of duplication across S1, S2, and S3K, while improving shared abstractions such as cross-game donation, animation translation, sidekick handling, and trace/test infrastructure.\n- **Knuckles** is now playable with ROM-accurate glide/climb behaviour, and cross-game support also improved through broader donation capabilities and multi-sidekick infrastructure.\n- **Sonic 3 & Knuckles** advanced significantly: AIZ now includes miniboss defeat flow, signpost/results, AIZ2 Flying Battery bombing, AIZ2 end boss, post-boss sequence, and the AIZ-to-HCZ transition.\n- **Hydrocity Zone** moved beyond bring-up status with early gameplay/event coverage including water rush, conveyor, fan, block, door, water skim, miniboss work, and HCZ1-to-HCZ2 progression.\n- **S3K front-end and side modes** expanded with title screen support, level select, Blue Ball special stage support, and active bonus-stage work across Gumball, Glowing Sphere/Pachinko, and Slots.\n- **Rendering, testing, and tooling** all hardened further with trace replay testing, rendering-pipeline fixes, lifecycle/testability cleanup, and broader contributor documentation.\n- OpenGGF remains an **alpha** release focused on preservation and accuracy. Sonic 1 is broadly playable, Sonic 2 remains the most complete module, and Sonic 3 & Knuckles has moved to a real AIZ-to-HCZ gameplay baseline but is still incomplete overall.\n\nSee CHANGELOG.md for full details.\n\n**Full Changelog**: https://github.com/jamesj999/OpenGGF/compare/v0.4.20260304...v0.5.20260411\r\n",
+    "assets": [
+      {
+        "name": "config.json",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.5.20260411/config.json"
+      },
+      {
+        "name": "OpenGGF-linux.tar.gz",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.5.20260411/OpenGGF-linux.tar.gz"
+      },
+      {
+        "name": "OpenGGF-macos.zip",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.5.20260411/OpenGGF-macos.zip"
+      },
+      {
+        "name": "OpenGGF-windows.zip",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.5.20260411/OpenGGF-windows.zip"
+      }
+    ]
+  },
+  {
+    "tag": "v0.5.prerelease",
+    "name": "v0.5.prerelease",
+    "url": "https://github.com/jamesj999/OpenGGF/releases/tag/v0.5.prerelease",
+    "prerelease": true,
+    "publishedAt": "2026-03-07T11:19:32Z",
+    "body": "**Full Changelog**: https://github.com/jamesj999/OpenGGF/compare/v0.4.20260304...v0.5.prerelease",
+    "assets": [
+      {
+        "name": "OpenGGF-linux.tar.gz",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.5.prerelease/OpenGGF-linux.tar.gz"
+      },
+      {
+        "name": "OpenGGF-macos.zip",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.5.prerelease/OpenGGF-macos.zip"
+      },
+      {
+        "name": "OpenGGF-windows.zip",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.5.prerelease/OpenGGF-windows.zip"
+      }
+    ]
+  },
+  {
+    "tag": "v0.4.20260304",
+    "name": "v0.4.20260304",
+    "url": "https://github.com/jamesj999/OpenGGF/releases/tag/v0.4.20260304",
+    "prerelease": true,
+    "publishedAt": "2026-03-04T20:04:30Z",
+    "body": "A release-sized update focused on expanding playable coverage, ending sequences, and engine maturity.\r\n\r\n- **Package rename** from `uk.co.jamesj999.sonic` to `com.openggf` across the entire codebase.\r\n- **Master title screen** implemented: engine-wide PNG-based title screen with animated clouds, game\r\n  selection, and pixel font renderer. Displayed on startup before entering game-specific title flow.\r\n- **Sonic 1** has moved from initial support to feature complete: title screen flow, special\r\n  stages, major per-zone event scripting, extensive object and badnik additions, multiple boss\r\n  implementations (GHZ, MZ, SYZ, LZ, SLZ, FZ), Labyrinth water/drowning/splash behaviour,\r\n  ending/credits work, SBZ post-level-end sequence, demo playback, edge balance and push block\r\n  collision corrections, and slope crest sensor guard. Expect minor bugs, but the game should be playable\r\n  from beginning to end.\r\n- **Sonic 2** adds title screen support, major object passes for MTZ/SCZ/WFZ/OOZ, 9 boss fights\r\n  (MCZ, MTZ, WFZ, and both DEZ bosses — Mecha Sonic and Death Egg Robot, plus Robotnik escape),\r\n  a complete credits and ending cutscene system with ROM-accurate visuals, expanded per-zone event\r\n  architecture, demo playback, signpost/badnik palette/stair block art fixes, and a systematic\r\n  TODO resolution pass with disassembly validation.\r\n- **Sonic 3&K** sees major AIZ progress including intro cutscene systems, hollow tree and vine\r\n  traversal parity work, miniboss object set bring-up, initial badnik implementations, shield/PLC\r\n  integration fixes, a full water system with provider architecture and underwater palettes,\r\n  seamless AIZ fire transition flow, and related regressions/tests.\r\n- **Cross-game feature donation** implemented: a donor game (S2 or S3K) can provide player sprites,\r\n  spindash dust, physics, palettes, and SFX while the base game handles levels, collision, objects,\r\n  and music. Now includes cross-game Super Sonic delegation.\r\n- **Per-game physics** and Super Sonic state/control flow (implemented for S2, with cross-game\r\n  delegation to S1 and S2 game modules).\r\n- **Profile-driven level loading:** declarative `LevelInitProfile` system with 13 ROM-aligned\r\n  steps per game, replacing the monolithic `loadLevel()` path.\r\n- **Testability refactor:** `GameContext`, `SharedLevel`, `HeadlessTestFixture` builder, and\r\n  profile-driven test teardown. Test grouping by level and 8-JVM parallel execution.\r\n- **Engine fixes:** solid object edge jitter fix, S1 slope crest sensor guard, jump-while-airborne\r\n  guard, fade transition flash fix, results screen rendering fix, HTZ earthquake fixes, SFX\r\n  channel replacement fix.\r\n- PLC/art-loader refactors, RomOffsetFinder/ObjectDiscoveryTool enhancements, configuration\r\n  documentation, and broad audio/stability/performance hardening.\r\n\r\nSee CHANGELOG.md for full details.\r\n\r\n**Full Changelog**: https://github.com/jamesj999/OpenGGF/compare/v0.3.20260206...v0.4.20260304",
+    "assets": [
+      {
+        "name": "openggf-linux-0.4.20260304.zip",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.4.20260304/openggf-linux-0.4.20260304.zip"
+      },
+      {
+        "name": "openggf-macos-0.4.20260304.zip",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.4.20260304/openggf-macos-0.4.20260304.zip"
+      },
+      {
+        "name": "openggf-windows-0.4.20260304.zip",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.4.20260304/openggf-windows-0.4.20260304.zip"
+      }
+    ]
+  },
+  {
+    "tag": "v0.3.20260206",
+    "name": "v0.3.20260206",
+    "url": "https://github.com/jamesj999/OpenGGF/releases/tag/v0.3.20260206",
+    "prerelease": true,
+    "publishedAt": "2026-02-06T20:28:57Z",
+    "body": "A massive release covering 366 commits across every major subsystem. Tails (Miles Prower) is now a playable character with ROM-accurate CPU AI follower behaviour, input replay, flight, and configurable sidekick toggle. The engine has been refactored to support multiple games via a provider-based abstraction layer, with initial Sonic 1 ROM support (level select, title cards, HUD, audio with S1-specific SMPS driver configuration) alongside the existing Sonic 2 support. The physics engine has been completely rewritten to match ROM behaviour. Boss fights are implemented for 5 zones (EHZ, CPZ, HTZ, CNZ, ARZ), along with 15+ new badniks and 50+ new game objects spanning all implemented zones. A full water system with drowning mechanics is in place for CPZ and ARZ. The graphics backend has been migrated from JOGL to LWJGL with a GPU-accelerated rendering pipeline (pattern atlas, tilemap shader, instanced sprite batching, priority FBOs). The audio engine has seen major accuracy improvements to YM2612 FM synthesis (based on Genesis-Plus-GX reference) and the SMPS driver. New infrastructure includes per-game ROM configuration, a HeadlessTestRunner for physics integration testing, visual and audio regression test suites, a multi-game test annotation framework, GraalVM native build support, and significant performance optimisations throughout.\r\n\r\nNative buidls are available for this release but are extremely experimental. Obviously the original ROM is not provided.\r\n\r\nSee CHANGELOG.md for full details.\r\n\r\n**Full Changelog**: https://github.com/jamesj999/sonic-engine/compare/v0.2.20260117...v0.3.20260206",
+    "assets": [
+      {
+        "name": "sonic-engine-0.3.20260206-jar-with-dependencies.jar",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.3.20260206/sonic-engine-0.3.20260206-jar-with-dependencies.jar"
+      },
+      {
+        "name": "sonic-engine-0.3.20260206.jar",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.3.20260206/sonic-engine-0.3.20260206.jar"
+      },
+      {
+        "name": "SonicEngine-linux.tar.gz",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.3.20260206/SonicEngine-linux.tar.gz"
+      },
+      {
+        "name": "SonicEngine-macos.zip",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.3.20260206/SonicEngine-macos.zip"
+      },
+      {
+        "name": "SonicEngine-windows.zip",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.3.20260206/SonicEngine-windows.zip"
+      }
+    ]
+  },
+  {
+    "tag": "v0.2.20260117",
+    "name": "v0.2.20260117",
+    "url": "https://github.com/jamesj999/OpenGGF/releases/tag/v0.2.20260117",
+    "prerelease": true,
+    "publishedAt": "2026-01-19T10:48:41Z",
+    "body": "Improvements and fixes across the board. Special stages are now implemented, feature complete with a few known issues.\r\n\r\nPhysics have been improved, parallax backgrounds implemented and complete for EHZ, CPZ, ARZ and MCZ.\r\n\r\nSome sound improvements, title cards, level 'outros' etc.",
+    "assets": [
+      {
+        "name": "sonic-engine-0.2.20260117-jar-with-dependencies.jar",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.2.20260117/sonic-engine-0.2.20260117-jar-with-dependencies.jar"
+      }
+    ]
+  },
+  {
+    "tag": "v0.1.20260110",
+    "name": "v0.1.20260110",
+    "url": "https://github.com/jamesj999/OpenGGF/releases/tag/v0.1.20260110",
+    "prerelease": true,
+    "publishedAt": "2026-01-10T15:21:09Z",
+    "body": "0.1.20260110 - First Release\r\n\r\n- Now vaguely resembles the actual Sonic 2 game.\r\n- Real collision and graphics data is loaded from the Sonic 2 ROM and rendered on screen.\r\n- The majority of the physics are in place, although it is far from perfect.\r\n- A system for loading game objects has been created, along with an implementation for most of the objects and Badniks in Emerald Hill Zone.\r\n- Rings are implemented.\r\n- Life and score tracking is implemented.\r\n- SoundFX and music are implemented.\r\n\r\nEverything has room for improvement, but this now resembles a playable game.",
+    "assets": [
+      {
+        "name": "sonic-engine-0.1.20260110-jar-with-dependencies.jar",
+        "url": "https://github.com/jamesj999/OpenGGF/releases/download/v0.1.20260110/sonic-engine-0.1.20260110-jar-with-dependencies.jar"
+      }
+    ]
+  }
+]
